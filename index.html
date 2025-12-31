@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>シロクマ福笑い</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #fff9f2;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1.1;
+            background: #fff;
+            border: 6px solid #8b4513; /* 茶色の枠線 */
+            border-radius: 30px;
+            overflow: hidden;
+            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(139, 69, 19, 0.2);
+            touch-action: none;
+        }
+        .face-base {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            z-index: 1;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        /* パーツの基本スタイル */
+        .part {
+            cursor: grab;
+            z-index: 10;
+            user-select: none;
+            -webkit-user-drag: none;
+            touch-action: none;
+            max-width: 60px; 
+            height: auto;
+            object-fit: contain;
+        }
+        /* キャンバス内にあるパーツ */
+        .is-on-canvas {
+            position: absolute !important;
+            max-width: 100px !important;
+            margin: 0 !important;
+        }
+        /* ドラッグ中のスタイル（最前面） */
+        .dragging {
+            position: fixed !important;
+            z-index: 9999 !important;
+            max-width: 100px !important;
+            pointer-events: none;
+            transform: scale(1.2);
+            opacity: 0.9;
+            margin: 0 !important;
+        }
+        .part.hidden-mode {
+            filter: brightness(0) opacity(0);
+        }
+        .blindfold-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(60, 30, 10, 0.9);
+            z-index: 50;
+            display: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            pointer-events: none;
+        }
+        .parts-tray {
+            background: #fae8d2;
+            padding: 15px;
+            border-radius: 20px;
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            min-height: 140px;
+            touch-action: pan-y;
+            border: 2px dashed #d2b48c;
+        }
+        .btn {
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        #message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            z-index: 200;
+            display: none;
+        }
+        #dragging-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="message-box"></div>
+    <div id="dragging-layer"></div>
+
+    <div class="max-w-2xl mx-auto text-center">
+        <h1 class="text-3xl font-bold mb-4 text-amber-900">クマさんの福笑い 🐻</h1>
+        
+        <div class="mb-4 flex flex-wrap justify-center gap-2">
+            <button id="toggleBlind" class="btn bg-amber-900 text-white px-5 py-2 rounded-full hover:bg-amber-950">
+                目隠しをする
+            </button>
+            <button id="resetBtn" class="btn bg-stone-400 text-white px-5 py-2 rounded-full hover:bg-stone-500">
+                リセット
+            </button>
+            <button id="copyUrlBtn" class="btn bg-teal-600 text-white px-5 py-2 rounded-full hover:bg-teal-700">
+                共有用URLをコピー
+            </button>
+            <button id="saveImgBtn" class="btn bg-orange-500 text-white px-5 py-2 rounded-full hover:bg-orange-600">
+                完成画像を保存
+            </button>
+        </div>
+
+        <div id="canvas" class="canvas-container relative">
+            <!-- クマの顔の輪郭 -->
+            <img src="images/face.png" alt="クマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
+            
+            <div id="blindOverlay" class="blindfold-overlay" style="display:none;">
+                <p class="text-2xl mb-2 font-bold">🐻 目隠し中 🐻</p>
+                <p class="text-sm">パーツを並べてみてね！</p>
+            </div>
+        </div>
+
+        <div id="tray" class="parts-tray">
+            <!-- 各パーツ画像 URL修正 -->
+            <img src="images/eye_l.png" class="part" id="part-eyeL" data-name="左目" crossorigin="anonymous">
+            <img src="images/eye_r.png" class="part" id="part-eyeR" data-name="右目" crossorigin="anonymous">
+            <img src="images/nose.png" class="part" id="part-nose" data-name="鼻" crossorigin="anonymous">
+            <img src="images/ear_l.png" class="part" id="part-earL" data-name="左耳" crossorigin="anonymous">
+            <img src="images/ear_r.png" class="part" id="part-earR" data-name="右耳" crossorigin="anonymous">
+            <img src="images/hand_l.png" class="part" id="part-handL" data-name="左手" crossorigin="anonymous">
+            <img src="images/hand_r.png" class="part" id="part-handR" data-name="右手" crossorigin="anonymous">
+        </div>
+        
+        <p class="mt-4 text-xs text-stone-500">※スマホでは指でパーツを運んでね</p>
+        <div class="h-20"></div>
+    </div>
+
+    <canvas id="exportCanvas" style="display:none;"></canvas>
+
+    <script>
+        const parts = document.querySelectorAll('.part');
+        const canvas = document.getElementById('canvas');
+        const tray = document.getElementById('tray');
+        const draggingLayer = document.getElementById('dragging-layer');
+        const faceBase = document.getElementById('faceBase');
+        const blindBtn = document.getElementById('toggleBlind');
+        const blindOverlay = document.getElementById('blindOverlay');
+        const resetBtn = document.getElementById('resetBtn');
+        const saveImgBtn = document.getElementById('saveImgBtn');
+        const copyUrlBtn = document.getElementById('copyUrlBtn');
+        const messageBox = document.getElementById('message-box');
+        
+        let isBlindfolded = false;
+        let activePart = null;
+        let offset = { x: 0, y: 0 };
+
+        const initialStates = Array.from(parts).map(p => ({
+            element: p,
+            parent: p.parentElement
+        }));
+
+        function showMessage(text) {
+            messageBox.textContent = text;
+            messageBox.style.display = 'block';
+            setTimeout(() => { messageBox.style.display = 'none'; }, 2500);
+        }
+
+        function updateUrl() {
+            const data = [];
+            parts.forEach(p => {
+                if (p.parentElement === canvas) {
+                    const x = parseFloat(p.style.left) / canvas.clientWidth;
+                    const y = parseFloat(p.style.top) / canvas.clientHeight;
+                    data.push(`${p.id}:${x.toFixed(3)}:${y.toFixed(3)}`);
+                }
+            });
+            const hash = data.join(',');
+            const url = new URL(window.location);
+            url.hash = hash ? `state=${encodeURIComponent(hash)}` : '';
+            window.history.replaceState(null, '', url);
+        }
+
+        function loadFromUrl() {
+            const hash = window.location.hash;
+            if (!hash.startsWith('#state=')) return;
+            const state = decodeURIComponent(hash.replace('#state=', ''));
+            state.split(',').forEach(item => {
+                const [id, x, y] = item.split(':');
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('is-on-canvas');
+                    canvas.appendChild(element);
+                    element.style.left = (parseFloat(x) * canvas.clientWidth) + 'px';
+                    element.style.top = (parseFloat(y) * canvas.clientHeight) + 'px';
+                }
+            });
+        }
+
+        function startDrag(e) {
+            const target = e.target.closest('.part');
+            if (!target) return;
+            e.preventDefault();
+            
+            activePart = target;
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+            const rect = activePart.getBoundingClientRect();
+            offset.x = clientX - rect.left;
+            offset.y = clientY - rect.top;
+
+            activePart.classList.add('dragging');
+            activePart.style.left = rect.left + 'px';
+            activePart.style.top = rect.top + 'px';
+            draggingLayer.appendChild(activePart);
+        }
+
+        function drag(e) {
+            if (!activePart) return;
+            if (e.cancelable) e.preventDefault();
+
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+            activePart.style.left = (clientX - offset.x) + 'px';
+            activePart.style.top = (clientY - offset.y) + 'px';
+        }
+
+        function endDrag() {
+            if (!activePart) return;
+
+            const partRect = activePart.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+
+            const isOnCanvas = (
+                partRect.right > canvasRect.left &&
+                partRect.left < canvasRect.right &&
+                partRect.bottom > canvasRect.top &&
+                partRect.top < canvasRect.bottom
+            );
+
+            activePart.classList.remove('dragging');
+
+            if (isOnCanvas) {
+                activePart.classList.add('is-on-canvas');
+                activePart.style.left = (partRect.left - canvasRect.left) + 'px';
+                activePart.style.top = (partRect.top - canvasRect.top) + 'px';
+                canvas.appendChild(activePart);
+            } else {
+                activePart.classList.remove('is-on-canvas');
+                activePart.style.left = '';
+                activePart.style.top = '';
+                const original = initialStates.find(s => s.element === activePart);
+                original.parent.appendChild(activePart);
+            }
+
+            activePart = null;
+            updateUrl();
+        }
+
+        [tray, canvas].forEach(el => {
+            el.addEventListener('mousedown', startDrag);
+            el.addEventListener('touchstart', startDrag, { passive: false });
+        });
+
+        window.addEventListener('mousemove', drag, { passive: false });
+        window.addEventListener('touchmove', drag, { passive: false });
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+
+        blindBtn.addEventListener('click', () => {
+            isBlindfolded = !isBlindfolded;
+            blindOverlay.style.display = isBlindfolded ? 'flex' : 'none';
+            blindBtn.textContent = isBlindfolded ? '目隠しを外す' : '目隠しをする';
+            blindBtn.classList.toggle('bg-amber-900', !isBlindfolded);
+            blindBtn.classList.toggle('bg-green-600', isBlindfolded);
+            parts.forEach(p => p.classList.toggle('hidden-mode', isBlindfolded));
+        });
+
+        resetBtn.addEventListener('click', () => {
+            initialStates.forEach(state => {
+                state.element.classList.remove('is-on-canvas', 'hidden-mode');
+                state.element.style.top = '';
+                state.element.style.left = '';
+                state.parent.appendChild(state.element);
+            });
+            isBlindfolded = false;
+            blindOverlay.style.display = 'none';
+            blindBtn.textContent = '目隠しをする';
+            blindBtn.className = 'btn bg-amber-900 text-white px-5 py-2 rounded-full hover:bg-amber-950';
+            updateUrl();
+        });
+
+        copyUrlBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.value = window.location.href;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showMessage("URLをコピーしました！");
+        });
+
+        saveImgBtn.addEventListener('click', () => {
+            if (isBlindfolded) return showMessage("目隠しを外してください！");
+            const exportCanvas = document.getElementById('exportCanvas');
+            const ctx = exportCanvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            exportCanvas.width = rect.width;
+            exportCanvas.height = rect.height;
+            ctx.fillStyle = "#fff9f2";
+            ctx.fillRect(0, 0, rect.width, rect.height);
+            
+            const drawImg = (img) => {
+                if (img.complete && img.naturalHeight !== 0) {
+                    const r = img.getBoundingClientRect();
+                    ctx.drawImage(img, r.left - rect.left, r.top - rect.top, r.width, r.height);
+                }
+            };
+
+            drawImg(faceBase);
+            canvas.querySelectorAll('.part').forEach(drawImg);
+
+            try {
+                const link = document.createElement('a');
+                link.download = 'kuma_fukuwarai.png';
+                link.href = exportCanvas.toDataURL('image/png');
+                link.click();
+                showMessage("画像を保存しました！");
+            } catch(e) {
+                showMessage("保存に失敗しました。");
+            }
+        });
+
+        window.onload = loadFromUrl;
+    </script>
+</body>
+</html>
