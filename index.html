@@ -23,7 +23,7 @@
         .canvas-container {
             position: relative;
             width: 100%;
-            aspect-ratio: 1 / 1.1;
+            aspect-ratio: 10 / 11; 
             background: #fff;
             border: 6px solid #4a5568;
             border-radius: 30px;
@@ -45,8 +45,8 @@
         }
         
         .part-box {
-            width: 80px;
-            height: 80px;
+            width: 100px; /* 80pxから100pxに拡大 */
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -60,8 +60,8 @@
         }
         
         .part {
-            max-width: 90%; 
-            max-height: 90%;
+            max-width: 95%; /* 少し余白を詰めて大きく表示 */
+            max-height: 95%;
             object-fit: contain;
             pointer-events: none;
         }
@@ -106,7 +106,7 @@
 
         .rotate-handle {
             border-radius: 50%;
-            top: -65px;
+            top: -70px; /* ボックス拡大に合わせて位置調整 */
             left: 50%;
             transform-origin: center center;
             cursor: alias;
@@ -114,7 +114,7 @@
 
         .scale-btn-container {
             position: absolute;
-            bottom: -65px;
+            bottom: -70px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -159,7 +159,7 @@
             border-radius: 20px;
             margin-top: 30px;
             display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center;
-            min-height: 120px;
+            min-height: 140px;
             touch-action: pan-y;
             border: 2px dashed #a0aec0;
         }
@@ -191,7 +191,7 @@
         </div>
 
         <div id="canvas" class="canvas-container">
-            <img src="https://6zr.github.io/fuku2026/images/face.png" alt="シロクマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
+            <img src="images/face.png" alt="シロクマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
             
             <div id="controlTemplate" class="controls">
                 <div class="handle rotate-handle" id="rotateHandle">
@@ -232,12 +232,14 @@
             <div class="part-box" id="box-handR" data-id="handR" data-name="右手" data-rotation="0" data-scale="1">
                 <img src="images/hand_r.png" class="part" crossorigin="anonymous">
             </div>
-            <!-- 追加パーツ -->
             <div class="part-box" id="box-antena" data-id="antena" data-name="アンテナ" data-rotation="0" data-scale="1">
                 <img src="images/antena.png" class="part" crossorigin="anonymous">
             </div>
             <div class="part-box" id="box-mikan" data-id="mikan" data-name="みかん" data-rotation="0" data-scale="1">
                 <img src="images/mikan.png" class="part" crossorigin="anonymous">
+            </div>
+            <div class="part-box" id="box-maguro" data-id="maguro" data-name="マグロ" data-rotation="0" data-scale="1">
+                <img src="images/maguro.png" class="part" crossorigin="anonymous">
             </div>
         </div>
     </div>
@@ -261,6 +263,10 @@
         const messageBox = document.getElementById('message-box');
         const partHint = document.getElementById('part-name-hint');
         
+        // 共通定数
+        const PART_SIZE = 100;
+        const OFFSET = PART_SIZE / 2;
+
         let isBlindfolded = false;
         let activeBox = null;
         let selectedBox = null;
@@ -293,8 +299,9 @@
             rotateHandle.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
             scaleBtnContainer.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
             
-            rotateHandle.style.top = `-${65 * invSca}px`;
-            scaleBtnContainer.style.bottom = `-${65 * invSca}px`;
+            const handleOffset = 70 * invSca;
+            rotateHandle.style.top = `-${handleOffset}px`;
+            scaleBtnContainer.style.bottom = `-${handleOffset}px`;
         }
 
         function deselectAll() {
@@ -357,8 +364,8 @@
 
         function updateDragPosition(clientX, clientY) {
             if (!activeBox) return;
-            activeBox.style.left = `${clientX - 40}px`;
-            activeBox.style.top = `${clientY - 40}px`;
+            activeBox.style.left = `${clientX - OFFSET}px`;
+            activeBox.style.top = `${clientY - OFFSET}px`;
         }
 
         function onMove(e) {
@@ -385,8 +392,8 @@
 
             const canvasRect = canvas.getBoundingClientRect();
             const boxRect = activeBox.getBoundingClientRect();
-            const centerX = boxRect.left + 40;
-            const centerY = boxRect.top + 40;
+            const centerX = boxRect.left + OFFSET;
+            const centerY = boxRect.top + OFFSET;
 
             const isInside = (
                 centerX > canvasRect.left && centerX < canvasRect.right &&
@@ -398,8 +405,8 @@
 
             if (isInside) {
                 activeBox.classList.add('is-on-canvas');
-                const finalX = (centerX - canvasRect.left) - 40;
-                const finalY = (centerY - canvasRect.top) - 40;
+                const finalX = (centerX - canvasRect.left) - OFFSET;
+                const finalY = (centerY - canvasRect.top) - OFFSET;
                 
                 activeBox.style.left = `${finalX}px`;
                 activeBox.style.top = `${finalY}px`;
@@ -413,7 +420,7 @@
                 activeBox.dataset.rotation = 0;
                 activeBox.dataset.scale = 1;
                 applyTransform(activeBox);
-                const state = initialStates.find(s => s.element === activeBox);
+                const state = initialStates.find(s => s.id === activeBox.dataset.id);
                 state.parent.appendChild(activeBox);
                 deselectAll();
             }
@@ -430,7 +437,6 @@
         window.addEventListener('mouseup', onEnd);
         window.addEventListener('touchend', onEnd);
 
-        // URL共有機能
         copyUrlBtn.addEventListener('click', () => {
             const state = [];
             canvas.querySelectorAll('.part-box').forEach(box => {
@@ -442,26 +448,21 @@
                     s: parseFloat(box.dataset.scale || 1)
                 });
             });
-            
             const url = new URL(window.location.href);
             if (state.length > 0) {
                 url.searchParams.set('f', btoa(JSON.stringify(state)));
             } else {
                 url.searchParams.delete('f');
             }
-            
-            // クリップボードへコピー
             const tempInput = document.createElement('input');
             tempInput.value = url.href;
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
             document.body.removeChild(tempInput);
-            
             showMessage("URLをコピーしました！");
         });
 
-        // ページ読み込み時に状態を復元
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const encodedData = params.get('f');
@@ -517,36 +518,65 @@
                 return;
             }
             deselectAll();
+            
             const exportCanvas = document.getElementById('exportCanvas');
             const ctx = exportCanvas.getContext('2d');
-            const rect = canvas.getBoundingClientRect();
-            exportCanvas.width = rect.width;
-            exportCanvas.height = rect.height;
+            
+            const baseWidth = canvas.clientWidth;
+            const baseHeight = baseWidth * 1.1; 
+            
+            const scaleFactor = 2; 
+            exportCanvas.width = baseWidth * scaleFactor;
+            exportCanvas.height = baseHeight * scaleFactor;
+            
+            ctx.scale(scaleFactor, scaleFactor);
+            
             ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, rect.width, rect.height);
+            ctx.fillRect(0, 0, baseWidth, baseHeight);
             
             const fImg = document.getElementById('faceBase');
-            const fRect = fImg.getBoundingClientRect();
-            ctx.drawImage(fImg, fRect.left - rect.left, fRect.top - rect.top, fRect.width, fRect.height);
+            const faceWidth = baseWidth * 0.85;
+            const faceHeight = faceWidth * (fImg.naturalHeight / fImg.naturalWidth);
+            const faceX = (baseWidth - faceWidth) / 2;
+            const faceY = (baseHeight - faceHeight) / 2;
+            ctx.drawImage(fImg, faceX, faceY, faceWidth, faceHeight);
 
             canvas.querySelectorAll('.part-box').forEach(box => {
                 const img = box.querySelector('img');
-                const r = box.getBoundingClientRect();
+                const posX = parseFloat(box.style.left);
+                const posY = parseFloat(box.style.top);
                 const rot = parseFloat(box.dataset.rotation || 0);
                 const sca = parseFloat(box.dataset.scale || 1);
                 
+                const boxSize = PART_SIZE;
+                const imgRatio = img.naturalWidth / img.naturalHeight;
+                let drawW, drawH;
+                
+                const maxInBox = boxSize * 0.95; // 余白を詰めたサイズ
+                if (imgRatio > 1) {
+                    drawW = maxInBox;
+                    drawH = maxInBox / imgRatio;
+                } else {
+                    drawH = maxInBox;
+                    drawW = maxInBox * imgRatio;
+                }
+
                 ctx.save();
-                ctx.translate(r.left - rect.left + r.width / 2, r.top - rect.top + r.height / 2);
+                ctx.translate(posX + boxSize / 2, posY + boxSize / 2);
                 ctx.rotate(rot * Math.PI / 180);
                 ctx.scale(sca, sca);
-                ctx.drawImage(img, -40, -40, 80, 80);
+                ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
                 ctx.restore();
             });
             
-            const link = document.createElement('a');
-            link.download = 'fukuwarai_shirokuma.png';
-            link.href = exportCanvas.toDataURL();
-            link.click();
+            try {
+                const link = document.createElement('a');
+                link.download = 'fukuwarai_shirokuma.png';
+                link.href = exportCanvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                showMessage("保存に失敗しました。");
+            }
         });
     </script>
 </body>
