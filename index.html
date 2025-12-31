@@ -45,7 +45,7 @@
         }
         
         .part-box {
-            width: 100px; /* 80pxから100pxに拡大 */
+            width: 100px;
             height: 100px;
             display: flex;
             align-items: center;
@@ -60,7 +60,7 @@
         }
         
         .part {
-            max-width: 95%; /* 少し余白を詰めて大きく表示 */
+            max-width: 95%;
             max-height: 95%;
             object-fit: contain;
             pointer-events: none;
@@ -106,7 +106,7 @@
 
         .rotate-handle {
             border-radius: 50%;
-            top: -70px; /* ボックス拡大に合わせて位置調整 */
+            top: -70px;
             left: 50%;
             transform-origin: center center;
             cursor: alias;
@@ -134,8 +134,7 @@
             position: fixed !important;
             z-index: 9999 !important;
             pointer-events: none;
-            opacity: 0.6 !important;
-            transform: scale(0.8) !important;
+            opacity: 0.8 !important;
             margin: 0 !important;
         }
 
@@ -238,7 +237,7 @@
             <div class="part-box" id="box-mikan" data-id="mikan" data-name="みかん" data-rotation="0" data-scale="1">
                 <img src="images/mikan.png" class="part" crossorigin="anonymous">
             </div>
-            <div class="part-box" id="box-maguro" data-id="maguro" data-name="マグロ" data-rotation="0" data-scale="1">
+            <div class="part-box" id="box-maguro" data-id="maguro" data-name="まぐろ" data-rotation="0" data-scale="1">
                 <img src="images/maguro.png" class="part" crossorigin="anonymous">
             </div>
         </div>
@@ -263,9 +262,8 @@
         const messageBox = document.getElementById('message-box');
         const partHint = document.getElementById('part-name-hint');
         
-        // 共通定数
-        const PART_SIZE = 100;
-        const OFFSET = PART_SIZE / 2;
+        const BOX_BASE_SIZE = 100;
+        const OFFSET_BASE = BOX_BASE_SIZE / 2;
 
         let isBlindfolded = false;
         let activeBox = null;
@@ -291,6 +289,7 @@
             if (!element) return;
             const rot = parseFloat(element.dataset.rotation || 0);
             const sca = parseFloat(element.dataset.scale || 1);
+            
             element.style.transform = `rotate(${rot}deg) scale(${sca})`;
             
             const invSca = 1 / sca;
@@ -318,10 +317,10 @@
             applyTransform(selectedBox);
         }
 
-        plusBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); updateScale(0.05); });
-        plusBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); updateScale(0.05); });
-        minusBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); updateScale(-0.05); });
-        minusBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); updateScale(-0.05); });
+        plusBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); updateScale(0.1); });
+        plusBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); updateScale(0.1); });
+        minusBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); updateScale(-0.1); });
+        minusBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); updateScale(-0.1); });
 
         function onStart(e) {
             const touch = e.type.includes('touch') ? e.touches[0] : e;
@@ -354,7 +353,9 @@
 
             activeBox.classList.add('dragging');
             updateDragPosition(touch.clientX, touch.clientY);
+            
             draggingLayer.appendChild(activeBox);
+            applyTransform(activeBox);
 
             if (isBlindfolded) {
                 partHint.textContent = activeBox.dataset.name;
@@ -364,8 +365,8 @@
 
         function updateDragPosition(clientX, clientY) {
             if (!activeBox) return;
-            activeBox.style.left = `${clientX - OFFSET}px`;
-            activeBox.style.top = `${clientY - OFFSET}px`;
+            activeBox.style.left = `${clientX - OFFSET_BASE}px`;
+            activeBox.style.top = `${clientY - OFFSET_BASE}px`;
         }
 
         function onMove(e) {
@@ -392,8 +393,8 @@
 
             const canvasRect = canvas.getBoundingClientRect();
             const boxRect = activeBox.getBoundingClientRect();
-            const centerX = boxRect.left + OFFSET;
-            const centerY = boxRect.top + OFFSET;
+            const centerX = boxRect.left + (boxRect.width / 2);
+            const centerY = boxRect.top + (boxRect.height / 2);
 
             const isInside = (
                 centerX > canvasRect.left && centerX < canvasRect.right &&
@@ -405,8 +406,9 @@
 
             if (isInside) {
                 activeBox.classList.add('is-on-canvas');
-                const finalX = (centerX - canvasRect.left) - OFFSET;
-                const finalY = (centerY - canvasRect.top) - OFFSET;
+                
+                const finalX = (centerX - canvasRect.left) - OFFSET_BASE;
+                const finalY = (centerY - canvasRect.top) - OFFSET_BASE;
                 
                 activeBox.style.left = `${finalX}px`;
                 activeBox.style.top = `${finalY}px`;
@@ -548,11 +550,11 @@
                 const rot = parseFloat(box.dataset.rotation || 0);
                 const sca = parseFloat(box.dataset.scale || 1);
                 
-                const boxSize = PART_SIZE;
+                const boxSize = BOX_BASE_SIZE;
                 const imgRatio = img.naturalWidth / img.naturalHeight;
                 let drawW, drawH;
                 
-                const maxInBox = boxSize * 0.95; // 余白を詰めたサイズ
+                const maxInBox = boxSize * 0.95;
                 if (imgRatio > 1) {
                     drawW = maxInBox;
                     drawH = maxInBox / imgRatio;
