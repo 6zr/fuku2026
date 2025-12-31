@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>シロクマ福笑い</title>
+    <title>シロクマの福笑い</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #fff9f2;
+            background-color: #f0f4f8; /* シロクマに合わせて少しクールな背景色に */
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             margin: 0;
             padding: 0;
@@ -18,11 +18,11 @@
             max-width: 600px;
             aspect-ratio: 1 / 1.1;
             background: #fff;
-            border: 6px solid #8b4513; /* 茶色の枠線 */
+            border: 6px solid #4a5568; /* グレー系の落ち着いた枠線 */
             border-radius: 30px;
             overflow: hidden;
             margin: 0 auto;
-            box-shadow: 0 10px 25px rgba(139, 69, 19, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             touch-action: none;
         }
         .face-base {
@@ -47,15 +47,23 @@
             height: auto;
             object-fit: contain;
         }
-        /* キャンバス内にあるパーツの基本サイズ */
+        /* キャンバス内にあるパーツの基本サイズ（レスポンシブ調整） */
         .is-on-canvas {
             position: absolute !important;
             margin: 0 !important;
         }
-        /* パーツごとのサイズ微調整 */
-        #part-eyeL, #part-eyeR { max-width: 100px !important; }
-        #part-nose { max-width: 110px !important; }
-        #part-handL, #part-handR { max-width: 180px !important; } /* 手を大きく */
+        
+        /* 画面幅に合わせてパーツサイズを調整（スマホで大きすぎないようにvwを使用） */
+        #part-eyeL, #part-eyeR { max-width: 16vw !important; }
+        #part-nose { max-width: 18vw !important; }
+        #part-handL, #part-handR { max-width: 28vw !important; }
+
+        /* PC（大きな画面）での最大サイズ制限 */
+        @media (min-width: 600px) {
+            #part-eyeL, #part-eyeR { max-width: 100px !important; }
+            #part-nose { max-width: 110px !important; }
+            #part-handL, #part-handR { max-width: 180px !important; }
+        }
 
         /* ドラッグ中のスタイル（最前面） */
         .dragging {
@@ -66,10 +74,16 @@
             opacity: 0.9;
             margin: 0 !important;
         }
-        /* ドラッグ中の個別サイズ適用 */
-        #part-eyeL.dragging, #part-eyeR.dragging { max-width: 100px !important; }
-        #part-nose.dragging { max-width: 110px !important; }
-        #part-handL.dragging, #part-handR.dragging { max-width: 180px !important; }
+        /* ドラッグ中の個別サイズ適用（配置時と同じ比率を維持） */
+        #part-eyeL.dragging, #part-eyeR.dragging { max-width: 16vw !important; }
+        #part-nose.dragging { max-width: 18vw !important; }
+        #part-handL.dragging, #part-handR.dragging { max-width: 28vw !important; }
+
+        @media (min-width: 600px) {
+            #part-eyeL.dragging, #part-eyeR.dragging { max-width: 100px !important; }
+            #part-nose.dragging { max-width: 110px !important; }
+            #part-handL.dragging, #part-handR.dragging { max-width: 180px !important; }
+        }
 
         .part.hidden-mode {
             filter: brightness(0) opacity(0);
@@ -80,7 +94,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(60, 30, 10, 0.9);
+            background: rgba(45, 55, 72, 0.9);
             z-index: 50;
             display: none;
             color: white;
@@ -91,7 +105,7 @@
             pointer-events: none;
         }
         .parts-tray {
-            background: #fae8d2;
+            background: #e2e8f0;
             padding: 15px;
             border-radius: 20px;
             margin-top: 20px;
@@ -102,7 +116,7 @@
             align-items: center;
             min-height: 120px;
             touch-action: pan-y;
-            border: 2px dashed #d2b48c;
+            border: 2px dashed #a0aec0;
         }
         .btn {
             transition: all 0.2s;
@@ -140,10 +154,10 @@
     <div id="dragging-layer"></div>
 
     <div class="max-w-2xl mx-auto text-center">
-        <h1 class="text-3xl font-bold mb-4 text-amber-900">シロクマ福笑い</h1>
+        <h1 class="text-3xl font-bold mb-4 text-slate-800">シロクマの福笑い</h1>
         
         <div class="mb-4 flex flex-wrap justify-center gap-2">
-            <button id="toggleBlind" class="btn bg-amber-900 text-white px-5 py-2 rounded-full hover:bg-amber-950">
+            <button id="toggleBlind" class="btn bg-slate-700 text-white px-5 py-2 rounded-full hover:bg-slate-800">
                 目隠しをする
             </button>
             <button id="resetBtn" class="btn bg-stone-400 text-white px-5 py-2 rounded-full hover:bg-stone-500">
@@ -158,11 +172,11 @@
         </div>
 
         <div id="canvas" class="canvas-container relative">
-            <!-- クマの顔の輪郭 -->
-            <img src="https://6zr.github.io/fuku2026/images/face.png" alt="クマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
+            <!-- シロクマの顔の輪郭 -->
+            <img src="https://6zr.github.io/fuku2026/images/face.png" alt="シロクマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
             
             <div id="blindOverlay" class="blindfold-overlay" style="display:none;">
-                <p class="text-2xl mb-2 font-bold"> 目隠し中 </p>
+                <p class="text-2xl mb-2 font-bold">目隠し中</p>
                 <p class="text-sm">パーツを並べてみてね！</p>
             </div>
         </div>
@@ -316,7 +330,7 @@
             isBlindfolded = !isBlindfolded;
             blindOverlay.style.display = isBlindfolded ? 'flex' : 'none';
             blindBtn.textContent = isBlindfolded ? '目隠しを外す' : '目隠しをする';
-            blindBtn.classList.toggle('bg-amber-900', !isBlindfolded);
+            blindBtn.classList.toggle('bg-slate-700', !isBlindfolded);
             blindBtn.classList.toggle('bg-green-600', isBlindfolded);
             parts.forEach(p => p.classList.toggle('hidden-mode', isBlindfolded));
         });
@@ -331,7 +345,7 @@
             isBlindfolded = false;
             blindOverlay.style.display = 'none';
             blindBtn.textContent = '目隠しをする';
-            blindBtn.className = 'btn bg-amber-900 text-white px-5 py-2 rounded-full hover:bg-amber-950';
+            blindBtn.className = 'btn bg-slate-700 text-white px-5 py-2 rounded-full hover:bg-slate-800';
             updateUrl();
         });
 
@@ -352,7 +366,7 @@
             const rect = canvas.getBoundingClientRect();
             exportCanvas.width = rect.width;
             exportCanvas.height = rect.height;
-            ctx.fillStyle = "#fff9f2";
+            ctx.fillStyle = "#f0f4f8";
             ctx.fillRect(0, 0, rect.width, rect.height);
             
             const drawImg = (img) => {
@@ -367,7 +381,7 @@
 
             try {
                 const link = document.createElement('a');
-                link.download = 'kuma_fukuwarai.png';
+                link.download = 'shirokuma_fukuwarai.png';
                 link.href = exportCanvas.toDataURL('image/png');
                 link.click();
                 showMessage("画像を保存しました！");
