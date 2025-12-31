@@ -30,13 +30,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 85%;
+            width: 75%; /* 輪郭を少し小さくして外側に余白を作る */
             z-index: 1;
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
         }
-        /* パーツの基本スタイル */
+        /* パーツの基本スタイル（トレイ内） */
         .part {
             cursor: grab;
             z-index: 10;
@@ -47,22 +47,30 @@
             height: auto;
             object-fit: contain;
         }
-        /* キャンバス内にあるパーツ */
+        /* キャンバス内にあるパーツの基本サイズ */
         .is-on-canvas {
             position: absolute !important;
-            max-width: 100px !important;
             margin: 0 !important;
         }
+        /* パーツごとのサイズ微調整 */
+        #part-eyeL, #part-eyeR { max-width: 100px !important; }
+        #part-nose { max-width: 110px !important; }
+        #part-handL, #part-handR { max-width: 180px !important; } /* 手を大きく */
+
         /* ドラッグ中のスタイル（最前面） */
         .dragging {
             position: fixed !important;
             z-index: 9999 !important;
-            max-width: 100px !important;
             pointer-events: none;
-            transform: scale(1.2);
+            transform: scale(1.1);
             opacity: 0.9;
             margin: 0 !important;
         }
+        /* ドラッグ中の個別サイズ適用 */
+        #part-eyeL.dragging, #part-eyeR.dragging { max-width: 100px !important; }
+        #part-nose.dragging { max-width: 110px !important; }
+        #part-handL.dragging, #part-handR.dragging { max-width: 180px !important; }
+
         .part.hidden-mode {
             filter: brightness(0) opacity(0);
         }
@@ -89,10 +97,10 @@
             margin-top: 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 15px;
             justify-content: center;
             align-items: center;
-            min-height: 140px;
+            min-height: 120px;
             touch-action: pan-y;
             border: 2px dashed #d2b48c;
         }
@@ -151,7 +159,7 @@
 
         <div id="canvas" class="canvas-container relative">
             <!-- クマの顔の輪郭 -->
-            <img src="images/face.png" alt="クマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
+            <img src="https://6zr.github.io/fuku2026/images/face.png" alt="クマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
             
             <div id="blindOverlay" class="blindfold-overlay" style="display:none;">
                 <p class="text-2xl mb-2 font-bold">🐻 目隠し中 🐻</p>
@@ -160,14 +168,11 @@
         </div>
 
         <div id="tray" class="parts-tray">
-            <!-- 各パーツ画像 URL修正 -->
-            <img src="images/eye_l.png" class="part" id="part-eyeL" data-name="左目" crossorigin="anonymous">
-            <img src="images/eye_r.png" class="part" id="part-eyeR" data-name="右目" crossorigin="anonymous">
-            <img src="images/nose.png" class="part" id="part-nose" data-name="鼻" crossorigin="anonymous">
-			<!-- <img src="images/ear_l.png" class="part" id="part-earL" data-name="左耳" crossorigin="anonymous"> -->
-			<!-- <img src="images/ear_r.png" class="part" id="part-earR" data-name="右耳" crossorigin="anonymous"> -->
-            <img src="images/hand_l.png" class="part" id="part-handL" data-name="左手" crossorigin="anonymous">
-            <img src="images/hand_r.png" class="part" id="part-handR" data-name="右手" crossorigin="anonymous">
+            <img src="https://6zr.github.io/fuku2026/images/eye_l.png" class="part" id="part-eyeL" data-name="左目" crossorigin="anonymous">
+            <img src="https://6zr.github.io/fuku2026/images/eye_r.png" class="part" id="part-eyeR" data-name="右目" crossorigin="anonymous">
+            <img src="https://6zr.github.io/fuku2026/images/nose.png" class="part" id="part-nose" data-name="鼻" crossorigin="anonymous">
+            <img src="https://6zr.github.io/fuku2026/images/hand_l.png" class="part" id="part-handL" data-name="左手" crossorigin="anonymous">
+            <img src="https://6zr.github.io/fuku2026/images/hand_r.png" class="part" id="part-handR" data-name="右手" crossorigin="anonymous">
         </div>
         
         <p class="mt-4 text-xs text-stone-500">※スマホでは指でパーツを運んでね</p>
