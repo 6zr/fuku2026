@@ -21,6 +21,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         .game-outer {
             display: flex;
@@ -31,44 +32,64 @@
         .game-container {
             width: 100%;
             max-width: 600px;
-            min-height: 85vh; 
+            min-height: 90vh; 
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             padding: 10px;
             position: relative;
         }
         .stage {
             position: relative;
             width: 100%;
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 450px;
+            margin-top: 10px;
+            gap: 10px;
         }
         
-        .bear-face-system {
+        .fukuwarai-viewer {
             position: relative;
-            width: 240px;
-            height: 264px;
-            margin-bottom: -40px;
+            width: 240px; 
+            height: 250px;
+            background: transparent;
+            border: none;
+            overflow: visible;
             z-index: 1;
+        }
+
+        .bear-face-system {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .bear-shadow {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 20px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 50%;
+            z-index: 0;
         }
 
         @keyframes wakuwaku {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(2px, -2px) rotate(1deg); }
-            75% { transform: translate(-2px, -1px) rotate(-1deg); }
+            25% { transform: translate(1px, -1px) rotate(0.5deg); }
+            75% { transform: translate(-1px, -0.5px) rotate(-0.5deg); }
         }
         .anim-wakuwaku { animation: wakuwaku 0.2s infinite; }
 
         @keyframes hopping {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-12px); }
         }
         .anim-hopping { animation: hopping 0.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
@@ -76,16 +97,35 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 85%;
+            width: 90%;
             pointer-events: none;
+            user-select: none;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
         }
-        .fuku-part {
+        
+        #fuku-parts-container {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
             pointer-events: none;
         }
-        .fuku-part img { width: 100%; height: 100%; object-fit: contain; }
+
+        .fuku-part-box {
+            position: absolute;
+            width: 37.5px;
+            height: 37.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            transform-origin: center center;
+        }
+        .fuku-part-img { 
+            max-width: 95%; 
+            max-height: 95%; 
+            object-fit: contain; 
+            display: block;
+        }
 
         #emotion-layer {
             position: absolute;
@@ -96,15 +136,16 @@
         
         .grill-container {
             position: relative;
-            width: 300px;
-            height: 180px;
+            width: 280px;
+            height: 160px;
             background: #333;
             border: 8px solid #555;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 0 #222;
+            box-shadow: 0 8px 0 #222, 0 15px 25px rgba(0,0,0,0.1);
+            z-index: 5;
         }
         .grill-mesh {
             width: 100%; height: 100%;
@@ -125,28 +166,28 @@
         }
 
         .mochi {
-            width: 70px; height: 70px;
+            width: 60px; height: 60px;
             background: #fff;
-            border-radius: 12px;
-            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.1), 0 3px 5px rgba(0,0,0,0.2);
             cursor: grab;
             display: flex;
             align-items: center;
             justify-content: center;
             position: absolute;
-            z-index: 10;
+            z-index: 100;
             transition: transform 0.1s;
             touch-action: none;
         }
         .mochi-skin {
             width: 80%; height: 80%;
-            border-radius: 10px;
+            border-radius: 8px;
             transition: background 10s linear, transform 2.5s ease-in-out;
         }
 
         .tray {
             width: 100%;
-            height: 100px;
+            height: 90px;
             background: #d4a373;
             border-radius: 20px 20px 0 0;
             display: flex;
@@ -160,15 +201,15 @@
 
         .dragging {
             position: fixed !important;
-            z-index: 1000 !important;
+            z-index: 2000 !important;
             pointer-events: none;
             opacity: 0.9;
         }
 
         #message {
             position: fixed;
-            top: 25%;
-            font-size: 1.8rem;
+            top: 20%;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #d85c27;
             text-shadow: 2px 2px 0 white;
@@ -179,38 +220,72 @@
             width: 100%;
         }
 
+        .score-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 2px solid #d4a373;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Result Overlay */
+        #result-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .result-card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 5px solid #d85c27;
+        }
+
         .url-input-container {
             width: 90%;
             max-width: 400px;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 6px;
             border-radius: 12px;
             display: flex;
             gap: 6px;
-            margin: 10px 0;
-            border: 1px solid #d4a373;
+            margin: 5px 0;
+            border: 1px solid rgba(212, 163, 115, 0.5);
         }
         .url-input {
             flex-grow: 1;
-            padding: 6px 10px;
+            padding: 4px 10px;
             border-radius: 8px;
             border: 1px solid #ccc;
-            font-size: 12px;
+            font-size: 11px;
             outline: none;
         }
         .url-btn {
             background: #d85c27;
             color: white;
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             cursor: pointer;
         }
 
         footer {
             width: 100%;
-            padding: 40px 0;
+            padding: 20px 0;
             background: transparent;
         }
     </style>
@@ -219,36 +294,54 @@
 
 <div class="game-outer">
     <div class="game-container">
-        <div class="text-center mt-2 w-full flex flex-col items-center">
-            <h1 class="text-xl font-bold text-stone-700">シロクマのお餅焼き</h1>
-            <div class="url-input-container">
-                <input type="text" id="urlInput" class="url-input" placeholder="福笑いのURLをここに貼り付け">
-                <button id="loadUrlBtn" class="url-btn">顔を読み込む</button>
+        <!-- Result Overlay -->
+        <div id="result-overlay">
+            <div class="result-card">
+                <h2 class="text-2xl font-bold text-stone-700 mb-2">判定結果</h2>
+                <div id="result-score" class="text-5xl font-black text-orange-500 mb-4">80点</div>
+                <div id="result-comment" class="text-lg text-stone-600 mb-6 font-bold">うまいワン</div>
+                <button onclick="closeResult()" class="bg-stone-700 text-white px-8 py-3 rounded-full font-bold hover:bg-stone-800 transition-all">もう一度焼く</button>
             </div>
         </div>
 
-        <div id="message">おいしそう！</div>
+        <div class="text-center mt-2 w-full flex flex-col items-center">
+            <h1 class="text-xl font-bold text-stone-700">シロクマのお餅焼き</h1>
+            <div class="url-input-container">
+                <input type="text" id="urlInput" class="url-input" placeholder="福笑いのURLを貼り付け">
+                <button id="loadUrlBtn" class="url-btn">顔を更新</button>
+            </div>
+        </div>
+
+        <div class="score-panel">
+            <div class="text-xs text-stone-500 font-bold">たべたお餅</div>
+            <div id="mochi-count" class="text-xl font-black text-orange-600">0</div>
+        </div>
+
+        <div id="message">おいしそうだワン！</div>
 
         <div class="stage">
-            <div class="bear-face-system" id="bearSystem">
-                <img src="https://6zr.github.io/fuku2026/images/face.png" class="face-base" alt="シロクマ" crossorigin="anonymous">
-                <div id="fuku-parts-container"></div>
-                <svg id="emotion-layer" viewBox="0 0 240 264">
-                    <g id="wrinkle" style="display:none;" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-linecap="round">
-                        <line x1="-4" y1="-8" x2="-4" y2="8" />
-                        <line x1="4" y1="-8" x2="4" y2="8" />
-                    </g>
-                    <g id="joy-stars" style="display:none;" fill="#ffcc00">
-                        <path d="M50 60 l3-3 3 3-3 3z M190 60 l3-3 3 3-3 3z" />
-                    </g>
-                    <g id="surprise" style="display:none;">
-                        <text x="200" y="60" font-family="Arial" font-weight="bold" font-size="40" fill="#ff4500" transform="rotate(15, 200, 60)">!</text>
-                    </g>
-                    <g id="tears" style="display:none;" fill="#4169e1" opacity="0.8">
-                        <rect id="tearL" x="0" y="0" width="6" height="12" rx="3" />
-                        <rect id="tearR" x="0" y="0" width="6" height="12" rx="3" />
-                    </g>
-                </svg>
+            <div class="bear-shadow"></div>
+            <div class="fukuwarai-viewer">
+                <div class="bear-face-system" id="bearSystem">
+                    <img src="https://6zr.github.io/fuku2026/images/face.png" class="face-base" id="faceImg" alt="シロクマ" crossorigin="anonymous">
+                    <div id="fuku-parts-container"></div>
+                    <svg id="emotion-layer" viewBox="0 0 240 264">
+                        <g id="wrinkle" style="display:none;" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-linecap="round">
+                            <line x1="-4" y1="-8" x2="-4" y2="8" />
+                            <line x1="4" y1="-8" x2="4" y2="8" />
+                        </g>
+                        <g id="joy-stars" style="display:none;" fill="#ffcc00">
+                            <path d="M50 60 l3-3 3 3-3 3z M190 60 l3-3 3 3-3 3z" />
+                        </g>
+                        <g id="surprise" style="display:none;">
+                            <text x="200" y="60" font-family="Arial" font-weight="bold" font-size="40" fill="#ff4500" transform="rotate(15, 200, 60)">!</text>
+                        </g>
+                        <g id="tears" style="display:none;" fill="#4169e1" opacity="0.8">
+                            <rect id="tearL" x="0" y="0" width="6" height="12" rx="3" />
+                            <rect id="tearR" x="0" y="0" width="6" height="12" rx="3" />
+                        </g>
+                    </svg>
+                </div>
             </div>
             
             <div class="grill-container" id="grill">
@@ -257,8 +350,9 @@
             </div>
         </div>
 
-        <div class="tray" id="tray">
-            <!-- Initial mochi will be generated by script -->
+        <div class="tray" id="tray"></div>
+        <div class="mt-4">
+            <button id="finishBtn" class="bg-white border-2 border-stone-300 text-stone-500 px-6 py-2 rounded-full font-bold hover:bg-stone-50 transition-all opacity-0 pointer-events-none">おなかいっぱいだワン！</button>
         </div>
     </div>
 
@@ -280,11 +374,17 @@
     const tray = document.getElementById('tray');
     const bearSystem = document.getElementById('bearSystem');
     const fukuContainer = document.getElementById('fuku-parts-container');
+    const faceImg = document.getElementById('faceImg');
     const message = document.getElementById('message');
     const urlInput = document.getElementById('urlInput');
     const loadUrlBtn = document.getElementById('loadUrlBtn');
+    const finishBtn = document.getElementById('finishBtn');
+    const mochiCountEl = document.getElementById('mochi-count');
+    const resultOverlay = document.getElementById('result-overlay');
+    const resultScoreEl = document.getElementById('result-score');
+    const resultCommentEl = document.getElementById('result-comment');
 
-    const DEFAULT_FACE_DATA = "W3siaWQiOiJub3NlIiwieCI6MjIxLCJ5IjozNDQsInIiOjExLCJzIjoxLjZ9LHsiaWQiOiJleWVSIiwieCI6MzQxLCJ5IjoyNjYsInIiOjAsInMiOjEuNH0seyJpZCI6ImV5ZUwiLCJ4IjoxNjQsInkiOjIyNywiciI6MCwicyI6MS40fV0=";
+    const DEFAULT_FACE_DATA = "W3siaWQiOiJleWVMIiwieCI6MTU4LCJ5IjoyMzMsInIiOjAsInMiOjEuMn0seyJpZCI6ImV5ZVIiLCJ4IjozMjcsInkiOjI2OCwiciI6MCwicyI6MS4yfSx7ImlkIjoibm9zZSIsIngiOjIyNCwieSI6MzUwLCJyIjowLCJzIjoxLjN9XQ==";
 
     const effects = {
         wrinkle: document.getElementById('wrinkle'),
@@ -293,12 +393,13 @@
         tears: document.getElementById('tears')
     };
 
-    let eyePositions = { L: {x:80, y:110}, R: {x:160, y:110} };
-    let activeMochi = null;
-    let offsetX = 0;
-    let offsetY = 0;
+    let eyePositions = { L: {x:80, y:100}, R: {x:160, y:100} };
     let grillMochiCount = 0;
+    let totalEaten = 0;
+    let scores = [];
     let mochiStates = new Map();
+    let activeMochi = null;
+    let offsetX = 0, offsetY = 0;
 
     function extractFaceData(input) {
         if (!input) return null;
@@ -332,35 +433,25 @@
             try {
                 const state = JSON.parse(atob(encodedData));
                 fukuContainer.innerHTML = '';
-                let eyesFound = { L: false, R: false };
-
+                const scaleFactor = 240 / 640;
                 state.forEach(p => {
                     const div = document.createElement('div');
-                    div.className = 'fuku-part';
-                    const scaleUI = 240 / 640; 
-                    const posX = p.x * scaleUI;
-                    const posY = p.y * scaleUI;
-                    div.style.left = posX + 'px';
-                    div.style.top = posY + 'px';
-
-                    if (p.id === 'eyeL') { eyePositions.L = {x: posX+20, y: posY+20}; eyesFound.L = true; }
-                    if (p.id === 'eyeR') { eyePositions.R = {x: posX+20, y: posY+20}; eyesFound.R = true; }
-
+                    div.className = 'fuku-part-box';
+                    div.style.left = (p.x * scaleFactor) + 'px';
+                    div.style.top = (p.y * scaleFactor) + 'px';
+                    const cpX = (p.x + 50) * scaleFactor;
+                    const cpY = (p.y + 50) * scaleFactor;
+                    if (p.id === 'eyeL') eyePositions.L = {x: cpX, y: cpY};
+                    if (p.id === 'eyeR') eyePositions.R = {x: cpX, y: cpY};
+                    div.style.transform = `rotate(${p.r}deg) scale(${p.s})`;
                     const img = document.createElement('img');
+                    img.className = 'fuku-part-img';
                     img.src = `https://6zr.github.io/fuku2026/images/${getFileName(p.id)}`;
-                    img.style.transform = `rotate(${p.r}deg) scale(${p.s})`;
                     img.crossOrigin = "anonymous";
                     div.appendChild(img);
                     fukuContainer.appendChild(div);
                 });
-
-                if (!eyesFound.L && eyesFound.R) eyePositions.L = {x: eyePositions.R.x - 80, y: eyePositions.R.y};
-                if (!eyesFound.R && eyesFound.L) eyePositions.R = {x: eyePositions.L.x + 80, y: eyePositions.L.y};
-
-                if (sourceInput) showEffect("顔を読み込みました！");
-            } catch(e) { 
-                if (sourceInput) showEffect("データの形式が正しくありません");
-            }
+            } catch(e) { console.error(e); }
         }
     }
 
@@ -433,8 +524,8 @@
     function placeMochiOnGrill(mochi, x, y) {
         mochi.classList.add('on-grill');
         mochi.style.position = 'absolute';
-        mochi.style.left = (x - 35) + 'px';
-        mochi.style.top = (y - 35) + 'px';
+        mochi.style.left = (x - 30) + 'px';
+        mochi.style.top = (y - 30) + 'px';
         grill.appendChild(mochi);
         grillMochiCount++;
         startToasting(mochi);
@@ -460,7 +551,7 @@
                 updateEmotion('hopping');
             } else if (heat === 100) {
                 updateEmotion('ready');
-                showEffect("食べごろ！");
+                showEffect("食べごろだワン！");
             } else if (heat > 160) {
                 updateEmotion('bad');
                 skin.style.background = "#331a00";
@@ -472,23 +563,45 @@
         }, 100);
 
         mochi.onclick = () => {
-            if (heat >= 80) {
-                grillMochiCount--;
-                mochiStates.delete(mochi);
-                if (heat > 160) {
-                    showEffect("にがい...");
-                    updateEmotion('fail');
-                } else {
-                    showEffect("パクッ！もちもち！");
-                    updateEmotion('happy');
-                }
-                mochi.style.opacity = "0";
-                setTimeout(() => {
-                    mochi.remove();
-                    if (grillMochiCount === 0) updateEmotion('default');
-                }, 300);
-                clearInterval(interval);
+            grillMochiCount--;
+            mochiStates.delete(mochi);
+            
+            let score = 0;
+            if (heat < 80) {
+                score = Math.floor((heat / 80) * 50);
+                showEffect(score + "点：生焼けワン");
+                updateEmotion('raw');
+            } else if (heat >= 80 && heat <= 120) {
+                // 100がピーク
+                score = 100 - Math.abs(100 - heat);
+                showEffect(score + "点：うまいワン！");
+                updateEmotion('happy');
+            } else if (heat > 120 && heat <= 160) {
+                score = 80 - (heat - 120);
+                showEffect(score + "点：もうちょっとだねワン");
+                updateEmotion('bad');
+            } else {
+                score = -20;
+                showEffect("にがいよ〜ワン（涙）");
+                updateEmotion('fail');
             }
+            
+            scores.push(score);
+            totalEaten++;
+            mochiCountEl.textContent = totalEaten;
+            if (totalEaten >= 1) {
+                finishBtn.style.opacity = "1";
+                finishBtn.style.pointerEvents = "auto";
+            }
+
+            mochi.style.opacity = "0";
+            setTimeout(() => {
+                mochi.remove();
+                if (grillMochiCount === 0) {
+                    setTimeout(() => { if (grillMochiCount === 0) updateEmotion('default'); }, 1500);
+                }
+            }, 300);
+            clearInterval(interval);
         };
     }
 
@@ -515,7 +628,7 @@
         switch(type) {
             case 'hot':
                 effects.surprise.style.display = 'block';
-                bearSystem.style.transform = "translateY(-5px) rotate(2deg)";
+                bearSystem.style.transform = "translateY(-4px) rotate(1deg)";
                 break;
             case 'ready':
                 effects.joyStars.style.display = 'block';
@@ -523,8 +636,12 @@
                 break;
             case 'happy':
                 effects.joyStars.style.display = 'block';
-                bearSystem.style.transform = "scale(1.2) rotate(5deg)";
-                setTimeout(() => { if (grillMochiCount === 0) updateEmotion('default'); }, 1000);
+                bearSystem.style.transform = "scale(1.1) rotate(3deg)";
+                break;
+            case 'raw':
+                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
+                effects.wrinkle.style.display = 'block';
+                bearSystem.style.transform = "scale(0.95) translateY(2px)";
                 break;
             case 'bad':
                 effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
@@ -538,7 +655,10 @@
                 document.getElementById('tearR').setAttribute('x', eyePositions.R.x - 3);
                 document.getElementById('tearR').setAttribute('y', eyePositions.R.y + 12);
                 effects.tears.style.display = 'block';
-                bearSystem.style.transform = "translateY(5px)";
+                bearSystem.style.transform = "translateY(3px)";
+                break;
+            case 'default':
+                bearSystem.style.transform = "scale(1)";
                 break;
         }
     }
@@ -546,10 +666,40 @@
     function showEffect(txt) {
         message.textContent = txt;
         message.style.display = 'block';
-        setTimeout(() => message.style.display = 'none', 1500);
+        setTimeout(() => { if(message.textContent === txt) message.style.display = 'none'; }, 1800);
     }
 
-    loadUrlBtn.addEventListener('click', () => loadFukuwarai(urlInput.value));
+    finishBtn.onclick = () => {
+        if (scores.length === 0) return;
+        const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        resultScoreEl.textContent = avg + "点";
+        
+        let comment = "";
+        if (avg >= 100) comment = "かんぺきワン！";
+        else if (avg >= 80) comment = "うまいワン";
+        else if (avg >= 50) comment = "もうちょっとだねワン";
+        else if (avg >= 0) comment = "生焼けワン";
+        else comment = "にがいよ〜ワン（涙）";
+
+        resultCommentEl.textContent = comment;
+        resultOverlay.style.display = 'flex';
+    };
+
+    window.closeResult = () => {
+        resultOverlay.style.display = 'none';
+        scores = [];
+        totalEaten = 0;
+        mochiCountEl.textContent = "0";
+        finishBtn.style.opacity = "0";
+        finishBtn.style.pointerEvents = "none";
+        updateEmotion('default');
+    };
+
+    loadUrlBtn.addEventListener('click', () => {
+        loadFukuwarai(urlInput.value);
+        showEffect("顔を読み込みました");
+    });
+
     window.addEventListener('mousedown', onStart);
     window.addEventListener('touchstart', onStart, { passive: false });
     window.addEventListener('mousemove', onMove);
@@ -557,9 +707,13 @@
     window.addEventListener('mouseup', onEnd);
     window.addEventListener('touchend', onEnd);
 
-    // Initial setup
-    refillTray();
-    loadFukuwarai();
+    if (faceImg.complete) init();
+    else faceImg.onload = init;
+
+    function init() {
+        refillTray();
+        loadFukuwarai();
+    }
 </script>
 
 </body>
