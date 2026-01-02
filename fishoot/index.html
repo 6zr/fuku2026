@@ -52,7 +52,7 @@
         #overlay {
             position: fixed;
             inset: 0;
-            background: rgba(136, 19, 55, 0.85);
+            background: rgba(136, 19, 55, 0.9);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -60,21 +60,28 @@
             z-index: 100;
             color: white;
             padding: 20px;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
         .btn-start {
             background: #fbbf24;
             color: #78350f;
-            padding: 12px 40px;
+            padding: 12px 60px;
             border-radius: 9999px;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: bold;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
             box-shadow: 0 4px 0 #b45309;
+            margin-bottom: 2rem;
         }
         .btn-start:active { transform: translateY(4px); box-shadow: none; }
+        
+        .overlay-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -96,11 +103,25 @@
     </div>
 
     <div id="overlay">
-        <h1 id="title" class="text-4xl font-black mb-4 text-yellow-300 text-center tracking-tighter italic">新春・福熊大漁旗</h1>
-        <p id="message" class="mb-6 text-lg text-center px-6 leading-relaxed">
-            魚に餅をあげて満足してもらおう。
-        </p>
-        <button class="btn-start" onclick="initGame()">開始</button>
+        <div class="flex-1 flex flex-col items-center justify-center">
+            <h1 id="title" class="text-5xl font-black mb-6 text-yellow-300 text-center tracking-tighter italic drop-shadow-lg">新春・福熊大漁旗</h1>
+            <p id="message" class="mb-10 text-xl text-center px-6 leading-relaxed max-w-md">
+                お腹を空かせた魚たちに「お餅」を届けて満足させましょう。
+            </p>
+            <button class="btn-start" onclick="initGame()">開始</button>
+        </div>
+
+        <footer class="overlay-footer text-rose-200/60 text-sm flex flex-col items-center py-8">
+            <div class="mb-4">
+                <a href="../" class="flex items-center hover:bg-rose-100 hover:text-rose-900 transition-colors bg-white/10 px-6 py-2 rounded-full shadow-sm border border-white/20 text-white">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    トップへもどる
+                </a>
+            </div>
+            <p class="font-sans">© 2026 6zr / fuku2026</p>
+        </footer>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -120,7 +141,6 @@
     PLAYER_IMG.src = IMAGES_BASE + "bear.png";
     PLAYER_IMG.crossOrigin = "anonymous";
 
-    // 魚の設定
     const ENEMY_TYPES = [
         { id: 'fish01', baseWidth: 456, hp: 24, speed: 1.2, score: 5000, weight: 5,  pattern: 'linear', isWhale: true }, 
         { id: 'fish02', baseWidth: 150, hp: 12, speed: 1.8, score: 1200, weight: 30, pattern: 'linear' },               
@@ -146,6 +166,10 @@
         damageFrame: 0, 
         width: 100 
     };
+    
+    // Offset to keep player above the finger/mouse
+    const TOUCH_Y_OFFSET = 60; 
+
     let bullets = [];
     let enemies = [];
     let frame = 0;
@@ -160,8 +184,10 @@
     function handleInput(e) {
         const x = e.touches ? e.touches[0].clientX : e.clientX;
         const y = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // Update targets with Y offset so player is above finger
         player.targetX = x;
-        player.targetY = y;
+        player.targetY = y - TOUCH_Y_OFFSET;
     }
     window.addEventListener('mousemove', handleInput);
     window.addEventListener('touchstart', handleInput);
@@ -288,7 +314,6 @@
         ctx.fillStyle = '#fda4af';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 背景文字
         ctx.save();
         ctx.font = 'bold 18vw serif';
         ctx.fillStyle = 'rgba(225, 29, 72, 0.08)'; 
@@ -297,7 +322,6 @@
         ctx.fillText('謹賀新年', canvas.width/2, canvas.height/2);
         ctx.restore();
 
-        // 弾（お餅をイメージした白い円）
         bullets.forEach(b => {
             ctx.fillStyle = '#fff';
             ctx.beginPath(); 
@@ -308,7 +332,6 @@
             ctx.shadowBlur = 0;
         });
 
-        // 敵
         enemies.forEach(e => {
             const aspect = e.img.naturalHeight / (e.img.naturalWidth || 1);
             const dw = e.baseWidth; 
@@ -326,8 +349,6 @@
 
             if (e.img && e.img.complete) {
                 ctx.drawImage(e.img, -dw/2, -dh/2, dw, dh);
-                
-                // 満足度（HP）ゲージ
                 if (!e.isSatisfied && e.hp > 1) {
                     const barW = Math.min(dw * 0.8, 150);
                     const barH = 8;
@@ -337,7 +358,6 @@
                     ctx.beginPath();
                     ctx.roundRect ? ctx.roundRect(bx, by, barW, barH, 4) : ctx.rect(bx, by, barW, barH);
                     ctx.fill();
-                    
                     ctx.fillStyle = '#fbbf24';
                     const progress = e.currentSat / e.hp;
                     ctx.beginPath();
@@ -363,7 +383,6 @@
             }
         });
 
-        // 自機（福熊）
         if (player.damageFrame % 12 < 6) {
             ctx.save();
             ctx.translate(player.x, player.y);
@@ -379,7 +398,9 @@
 
     function endGame() {
         titleEl.textContent = "福寿満了";
-        messageEl.innerHTML = `最終得点: <span class="text-3xl text-yellow-300 font-black">${score}</span><br>豊かな一年になりますように！`;
+        messageEl.innerHTML = `今回の最終得点<br><span class="text-5xl text-yellow-300 font-black my-4 block drop-shadow-md">${score.toLocaleString()}</span>豊かな一年になりますように！`;
+        const startBtn = document.querySelector('.btn-start');
+        startBtn.textContent = "もう一度遊ぶ";
         overlay.style.display = 'flex';
     }
 </script>
