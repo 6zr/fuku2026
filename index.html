@@ -31,23 +31,6 @@
             background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
             background-size: 30px 30px;
         }
-        .image-container {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .loading-spinner {
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 3px solid #3b82f6;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body class="polar-bear-bg min-h-screen flex flex-col items-center py-12 px-4">
@@ -58,12 +41,12 @@
     </header>
 
     <!-- Games Grid -->
-    <main class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+    <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
         
         <!-- Game 1: Warai -->
         <a href="./warai/" class="game-card block bg-white rounded-3xl overflow-hidden border-4 border-white shadow-lg group">
-            <div id="img-warai" class="h-48 bg-blue-100 flex items-center justify-center overflow-hidden">
-                <span class="text-6xl">🎭</span>
+            <div class="h-48 bg-blue-100 flex items-center justify-center overflow-hidden">
+                <span class="text-7xl group-hover:scale-110 transition-transform duration-300">🎭</span>
             </div>
             <div class="p-6">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">シロクマ福笑い</h2>
@@ -79,13 +62,30 @@
 
         <!-- Game 2: Mochi -->
         <a href="./mochi/" class="game-card block bg-white rounded-3xl overflow-hidden border-4 border-white shadow-lg group">
-            <div id="img-mochi" class="h-48 bg-orange-100 flex items-center justify-center overflow-hidden">
-                <span class="text-6xl">🍡</span>
+            <div class="h-48 bg-orange-100 flex items-center justify-center overflow-hidden">
+                <span class="text-7xl group-hover:scale-110 transition-transform duration-300">🍡</span>
             </div>
             <div class="p-6">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">シロクマお餅焼きゲーム</h2>
                 <p class="text-slate-600 mb-4">一緒におもちを焼こう。焦げないように気をつけて！</p>
                 <div class="inline-flex items-center text-orange-500 font-bold">
+                    あそびにいく 
+                    <svg class="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </div>
+            </div>
+        </a>
+
+        <!-- Game 3: Fishoot -->
+        <a href="./fishoot/" class="game-card block bg-white rounded-3xl overflow-hidden border-4 border-white shadow-lg group">
+            <div class="h-48 bg-emerald-100 flex items-center justify-center overflow-hidden">
+                <span class="text-7xl group-hover:scale-110 transition-transform duration-300">🐟</span>
+            </div>
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">シロクマお魚シューティング</h2>
+                <p class="text-slate-600 mb-4">お魚にお餅をあげて満足してもらおう！</p>
+                <div class="inline-flex items-center text-emerald-500 font-bold">
                     あそびにいく 
                     <svg class="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -100,7 +100,7 @@
     <footer class="mt-16 text-slate-400 text-sm flex flex-col items-center">
         <!-- Back to Top Link -->
         <div class="mb-4">
-            <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+            <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100 text-slate-500">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
@@ -113,5 +113,6 @@
             <a href="https://github.com/6zr/fuku2026" class="hover:text-slate-600 underline">GitHub Repository</a>
         </div>
     </footer>
+
 </body>
 </html>
