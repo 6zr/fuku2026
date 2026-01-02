@@ -1,596 +1,117 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VW1EHGZ7WM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-VW1EHGZ7WM');
+    </script>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>シロクマの福笑い</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シロクマ2026お正月ゲームポータル</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-VW1EHGZ7WM"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
-		gtag('js', new Date());
-
-		gtag('config', 'G-VW1EHGZ7WM');
-	</script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f0f4f8;
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            overscroll-behavior: none;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #f0f9ff;
         }
-        .game-wrapper {
-            position: relative;
-            padding: 20px 10px;
-            max-width: 640px;
-            margin: 0 auto;
+        .game-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .canvas-container {
-            position: relative;
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        .polar-bear-bg {
+            background-image: radial-gradient(#e0f2fe 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        .image-container {
             width: 100%;
-            aspect-ratio: 10 / 11; 
-            background: #fff;
-            border: 6px solid #4a5568;
-            border-radius: 30px;
-            margin: 0 auto;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            touch-action: none;
-            overflow: visible;
+            height: 100%;
+            object-fit: cover;
         }
-        
-        .face-base {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%;
-            z-index: 1;
-            pointer-events: none;
-            user-select: none;
-        }
-        
-        .part-box {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            touch-action: none;
-            user-select: none;
-            z-index: 10;
-            transform-origin: center center;
-            cursor: grab;
-            transition: opacity 0.2s;
-        }
-        
-        .part {
-            max-width: 95%;
-            max-height: 95%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-
-        .is-on-canvas {
-            position: absolute !important;
-        }
-        
-        .is-selected {
-            z-index: 50 !important;
-        }
-
-        .controls {
-            position: absolute;
-            display: none;
-            pointer-events: none;
-            z-index: 100;
-            border: 2px dashed #3b82f6;
-            box-sizing: border-box;
-            top: 0; left: 0; width: 100%; height: 100%;
-        }
-        .is-selected .controls {
-            display: block;
-        }
-        
-        .handle {
-            position: absolute;
-            width: 48px;
-            height: 48px;
-            background: #3b82f6;
-            border: 3px solid white;
-            pointer-events: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            z-index: 110;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .rotate-handle {
+        .loading-spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            top: -70px;
-            left: 50%;
-            transform-origin: center center;
-            cursor: alias;
+            border-top: 3px solid #3b82f6;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
         }
-
-        .scale-btn-container {
-            position: absolute;
-            bottom: -70px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            pointer-events: none;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        .scale-btn {
-            position: static !important;
-            transform: none !important;
-            border-radius: 12px;
-            cursor: pointer;
-            pointer-events: auto;
-        }
-
-        .dragging {
-            position: fixed !important;
-            z-index: 9999 !important;
-            pointer-events: none;
-            opacity: 0.8 !important;
-            margin: 0 !important;
-        }
-
-        .blind-mode .part { filter: opacity(0.3); }
-        .is-on-canvas.blind-mode .part { filter: opacity(0); }
-        .is-selected.blind-mode .part { filter: opacity(0.4) !important; }
-
-        .blindfold-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(45, 55, 72, 0.97);
-            z-index: 5;
-            color: white;
-            display: flex; align-items: center; justify-content: center; flex-direction: column;
-            pointer-events: none;
-            border-radius: 24px;
-        }
-        .parts-tray {
-            background: #e2e8f0;
-            padding: 20px;
-            border-radius: 20px;
-            margin-top: 30px;
-            display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center;
-            min-height: 140px;
-            touch-action: pan-y;
-            border: 2px dashed #a0aec0;
-        }
-        .btn { transition: all 0.2s; font-weight: bold; }
-        .btn:active { transform: scale(0.95); }
-        #message-box {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.9); color: white;
-            padding: 12px 24px; border-radius: 50px; z-index: 2000; display: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        #dragging-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
     </style>
 </head>
-<body>
+<body class="polar-bear-bg min-h-screen flex flex-col items-center py-12 px-4">
 
-    <div id="message-box"></div>
-    <div id="dragging-layer"></div>
+    <!-- Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-slate-700 mb-2 mt-8">シロクマ2026お正月ゲームポータル</h1>
+    </header>
 
-    <div class="game-wrapper">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold mb-4 text-slate-800">シロクマの福笑い</h1>
-            <div class="flex flex-wrap justify-center gap-3">
-                <button id="toggleBlind" class="btn bg-slate-700 text-white px-6 py-2 rounded-full hover:bg-slate-800">目隠しをする</button>
-                <button id="copyUrlBtn" class="btn bg-indigo-500 text-white px-6 py-2 rounded-full hover:bg-indigo-600">URLをコピー</button>
-                <button id="resetBtn" class="btn bg-stone-400 text-white px-6 py-2 rounded-full hover:bg-stone-500">リセット</button>
-                <button id="saveImgBtn" class="btn bg-orange-500 text-white px-6 py-2 rounded-full hover:bg-orange-600">画像を保存</button>
+    <!-- Games Grid -->
+    <main class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+        
+        <!-- Game 1: Warai -->
+        <a href="./warai/" class="game-card block bg-white rounded-3xl overflow-hidden border-4 border-white shadow-lg group">
+            <div id="img-warai" class="h-48 bg-blue-100 flex items-center justify-center overflow-hidden">
+                <span class="text-6xl">🎭</span>
             </div>
-        </div>
-
-        <div id="canvas" class="canvas-container">
-            <img src="images/face.png" alt="シロクマの顔" class="face-base" id="faceBase" crossorigin="anonymous">
-            
-            <div id="controlTemplate" class="controls">
-                <div class="handle rotate-handle" id="rotateHandle">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
-                        <polyline points="21 3 21 8 16 8"/>
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">シロクマ福笑い</h2>
+                <p class="text-slate-600 mb-4">パーツを自由に配置して、面白い顔を作ってみよう！</p>
+                <div class="inline-flex items-center text-blue-500 font-bold">
+                    あそびにいく 
+                    <svg class="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                     </svg>
                 </div>
-                <div class="scale-btn-container" id="scaleBtnContainer">
-                    <div class="handle scale-btn" id="minusBtn" title="小さく">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </div>
-                    <div class="handle scale-btn" id="plusBtn" title="大きく">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </div>
+            </div>
+        </a>
+
+        <!-- Game 2: Mochi -->
+        <a href="./mochi/" class="game-card block bg-white rounded-3xl overflow-hidden border-4 border-white shadow-lg group">
+            <div id="img-mochi" class="h-48 bg-orange-100 flex items-center justify-center overflow-hidden">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">シロクマお餅焼きゲーム</h2>
+                <p class="text-slate-600 mb-4">一緒におもちを焼こう。焦げないように気をつけて！</p>
+                <div class="inline-flex items-center text-orange-500 font-bold">
+                    あそびにいく 
+                    <svg class="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
                 </div>
             </div>
+        </a>
 
-            <div id="blindOverlay" class="blindfold-overlay" style="display:none;">
-                <p class="text-3xl mb-4 font-bold">目隠し中</p>
-                <div id="part-name-hint" class="mt-4 bg-white/20 px-6 py-2 rounded-full text-lg" style="display:none;"></div>
-            </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-slate-400 text-sm flex flex-col items-center">
+        <!-- Back to Top Link -->
+        <div class="mb-4">
+            <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                トップへもどる
+            </a>
         </div>
-
-        <div id="tray" class="parts-tray">
-            <div class="part-box" id="box-eyeL" data-id="eyeL" data-name="左目" data-rotation="0" data-scale="1">
-                <img src="images/eye_l.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-eyeR" data-id="eyeR" data-name="右目" data-rotation="0" data-scale="1">
-                <img src="images/eye_r.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-nose" data-id="nose" data-name="鼻" data-rotation="0" data-scale="1">
-                <img src="images/nose.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-handL" data-id="handL" data-name="左手" data-rotation="0" data-scale="1">
-                <img src="images/hand_l.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-handR" data-id="handR" data-name="右手" data-rotation="0" data-scale="1">
-                <img src="images/hand_r.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-antena" data-id="antena" data-name="アンテナ" data-rotation="0" data-scale="1">
-                <img src="images/antena.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-mikan" data-id="mikan" data-name="みかん" data-rotation="0" data-scale="1">
-                <img src="images/mikan.png" class="part" crossorigin="anonymous">
-            </div>
-            <div class="part-box" id="box-maguro" data-id="maguro" data-name="まぐろ" data-rotation="0" data-scale="1">
-                <img src="images/maguro.png" class="part" crossorigin="anonymous">
-            </div>
-        </div>
-    </div>
-
-    <canvas id="exportCanvas" style="display:none;"></canvas>
-
-    <script>
-        const canvas = document.getElementById('canvas');
-        const tray = document.getElementById('tray');
-        const draggingLayer = document.getElementById('dragging-layer');
-        const blindBtn = document.getElementById('toggleBlind');
-        const blindOverlay = document.getElementById('blindOverlay');
-        const resetBtn = document.getElementById('resetBtn');
-        const saveImgBtn = document.getElementById('saveImgBtn');
-        const copyUrlBtn = document.getElementById('copyUrlBtn');
-        const controlTemplate = document.getElementById('controlTemplate');
-        const rotateHandle = document.getElementById('rotateHandle');
-        const scaleBtnContainer = document.getElementById('scaleBtnContainer');
-        const plusBtn = document.getElementById('plusBtn');
-        const minusBtn = document.getElementById('minusBtn');
-        const messageBox = document.getElementById('message-box');
-        const partHint = document.getElementById('part-name-hint');
         
-        const BOX_BASE_SIZE = 100;
-        const OFFSET_BASE = BOX_BASE_SIZE / 2;
-
-        let isBlindfolded = false;
-        let activeBox = null;
-        let selectedBox = null;
-        let isRotating = false;
-
-        let startAngle = 0;
-        let baseRotation = 0;
-
-        const initialStates = Array.from(document.querySelectorAll('.part-box')).map(box => ({
-            element: box,
-            parent: box.parentElement,
-            id: box.dataset.id
-        }));
-
-        function showMessage(text) {
-            messageBox.textContent = text;
-            messageBox.style.display = "block";
-            setTimeout(() => messageBox.style.display = "none", 2500);
-        }
-
-        function applyTransform(element) {
-            if (!element) return;
-            const rot = parseFloat(element.dataset.rotation || 0);
-            const sca = parseFloat(element.dataset.scale || 1);
-            
-            element.style.transform = `rotate(${rot}deg) scale(${sca})`;
-            
-            const invSca = 1 / sca;
-            const invRot = -rot;
-            
-            rotateHandle.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
-            scaleBtnContainer.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
-            
-            const handleOffset = 70 * invSca;
-            rotateHandle.style.top = `-${handleOffset}px`;
-            scaleBtnContainer.style.bottom = `-${handleOffset}px`;
-        }
-
-        function deselectAll() {
-            document.querySelectorAll('.part-box').forEach(p => p.classList.remove('is-selected'));
-            selectedBox = null;
-            document.body.appendChild(controlTemplate);
-        }
-
-        function updateScale(delta) {
-            if (!selectedBox) return;
-            let sca = parseFloat(selectedBox.dataset.scale || 1);
-            sca = Math.max(0.3, Math.min(4, sca + delta));
-            selectedBox.dataset.scale = sca.toFixed(2);
-            applyTransform(selectedBox);
-        }
-
-        plusBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); updateScale(0.1); });
-        plusBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); updateScale(0.1); });
-        minusBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); updateScale(-0.1); });
-        minusBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); updateScale(-0.1); });
-
-        function onStart(e) {
-            const touch = e.type.includes('touch') ? e.touches[0] : e;
-            const target = e.target;
-
-            if (target.closest('.rotate-handle')) {
-                e.preventDefault();
-                isRotating = true;
-                const rect = selectedBox.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                const cy = rect.top + rect.height / 2;
-                startAngle = Math.atan2(touch.clientY - cy, touch.clientX - cx);
-                baseRotation = parseFloat(selectedBox.dataset.rotation || 0);
-                return;
-            }
-
-            if (target.closest('.scale-btn')) return;
-
-            const box = target.closest('.part-box');
-            if (!box) {
-                deselectAll();
-                return;
-            }
-            
-            e.preventDefault();
-            activeBox = box;
-            deselectAll();
-            activeBox.classList.add('is-selected');
-            selectedBox = activeBox;
-
-            activeBox.classList.add('dragging');
-            updateDragPosition(touch.clientX, touch.clientY);
-            
-            draggingLayer.appendChild(activeBox);
-            applyTransform(activeBox);
-
-            if (isBlindfolded) {
-                partHint.textContent = activeBox.dataset.name;
-                partHint.style.display = 'block';
-            }
-        }
-
-        function updateDragPosition(clientX, clientY) {
-            if (!activeBox) return;
-            activeBox.style.left = `${clientX - OFFSET_BASE}px`;
-            activeBox.style.top = `${clientY - OFFSET_BASE}px`;
-        }
-
-        function onMove(e) {
-            const touch = e.type.includes('touch') ? e.touches[0] : e;
-
-            if (isRotating && selectedBox) {
-                const rect = selectedBox.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                const cy = rect.top + rect.height / 2;
-                const currentAngle = Math.atan2(touch.clientY - cy, touch.clientX - cx);
-                selectedBox.dataset.rotation = (baseRotation + (currentAngle - startAngle) * 180 / Math.PI) % 360;
-                applyTransform(selectedBox);
-                return;
-            }
-
-            if (!activeBox) return;
-            if (e.cancelable) e.preventDefault();
-            updateDragPosition(touch.clientX, touch.clientY);
-        }
-
-        function onEnd() {
-            isRotating = false;
-            if (!activeBox) return;
-
-            const canvasRect = canvas.getBoundingClientRect();
-            const boxRect = activeBox.getBoundingClientRect();
-            const centerX = boxRect.left + (boxRect.width / 2);
-            const centerY = boxRect.top + (boxRect.height / 2);
-
-            const isInside = (
-                centerX > canvasRect.left && centerX < canvasRect.right &&
-                centerY > canvasRect.top && centerY < canvasRect.bottom
-            );
-
-            activeBox.classList.remove('dragging');
-            partHint.style.display = 'none';
-
-            if (isInside) {
-                activeBox.classList.add('is-on-canvas');
-                
-                const finalX = (centerX - canvasRect.left) - OFFSET_BASE;
-                const finalY = (centerY - canvasRect.top) - OFFSET_BASE;
-                
-                activeBox.style.left = `${finalX}px`;
-                activeBox.style.top = `${finalY}px`;
-                
-                canvas.appendChild(activeBox);
-                activeBox.appendChild(controlTemplate);
-                applyTransform(activeBox);
-            } else {
-                activeBox.classList.remove('is-on-canvas');
-                activeBox.style.left = ''; activeBox.style.top = '';
-                activeBox.dataset.rotation = 0;
-                activeBox.dataset.scale = 1;
-                applyTransform(activeBox);
-                const state = initialStates.find(s => s.id === activeBox.dataset.id);
-                state.parent.appendChild(activeBox);
-                deselectAll();
-            }
-
-            activeBox = null;
-        }
-
-        [tray, canvas].forEach(el => {
-            el.addEventListener('mousedown', onStart);
-            el.addEventListener('touchstart', onStart, { passive: false });
-        });
-        window.addEventListener('mousemove', onMove);
-        window.addEventListener('touchmove', onMove, { passive: false });
-        window.addEventListener('mouseup', onEnd);
-        window.addEventListener('touchend', onEnd);
-
-        copyUrlBtn.addEventListener('click', () => {
-            const state = [];
-            canvas.querySelectorAll('.part-box').forEach(box => {
-                state.push({
-                    id: box.dataset.id,
-                    x: parseInt(box.style.left),
-                    y: parseInt(box.style.top),
-                    r: Math.round(parseFloat(box.dataset.rotation || 0)),
-                    s: parseFloat(box.dataset.scale || 1)
-                });
-            });
-            const url = new URL(window.location.href);
-            if (state.length > 0) {
-                url.searchParams.set('f', btoa(JSON.stringify(state)));
-            } else {
-                url.searchParams.delete('f');
-            }
-            const tempInput = document.createElement('input');
-            tempInput.value = url.href;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            showMessage("URLをコピーしました！");
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const encodedData = params.get('f');
-            if (encodedData) {
-                try {
-                    const state = JSON.parse(atob(encodedData));
-                    state.forEach(p => {
-                        const original = initialStates.find(s => s.id === p.id);
-                        if (original) {
-                            const box = original.element;
-                            box.classList.add('is-on-canvas');
-                            box.style.left = `${p.x}px`;
-                            box.style.top = `${p.y}px`;
-                            box.dataset.rotation = p.r;
-                            box.dataset.scale = p.s;
-                            canvas.appendChild(box);
-                            applyTransform(box);
-                        }
-                    });
-                } catch(e) { console.error("URL復元エラー", e); }
-            }
-        });
-
-        blindBtn.addEventListener('click', () => {
-            isBlindfolded = !isBlindfolded;
-            blindOverlay.style.display = isBlindfolded ? 'flex' : 'none';
-            blindBtn.textContent = isBlindfolded ? '目隠しを外す' : '目隠しをする';
-            blindBtn.classList.toggle('bg-slate-700', !isBlindfolded);
-            blindBtn.classList.toggle('bg-green-600', isBlindfolded);
-            document.querySelectorAll('.part-box').forEach(b => b.classList.toggle('blind-mode', isBlindfolded));
-            deselectAll();
-        });
-
-        resetBtn.addEventListener('click', () => {
-            initialStates.forEach(state => {
-                state.element.classList.remove('is-on-canvas', 'blind-mode');
-                state.element.style.top = ''; state.element.style.left = '';
-                state.element.dataset.rotation = 0;
-                state.element.dataset.scale = 1;
-                applyTransform(state.element);
-                state.parent.appendChild(state.element);
-            });
-            isBlindfolded = false;
-            blindOverlay.style.display = 'none';
-            blindBtn.textContent = '目隠しをする';
-            blindBtn.className = 'btn bg-slate-700 text-white px-6 py-2 rounded-full hover:bg-slate-800';
-            deselectAll();
-        });
-
-        saveImgBtn.addEventListener('click', () => {
-            if (isBlindfolded) {
-                showMessage("目隠しを外してください！");
-                return;
-            }
-            deselectAll();
-            
-            const exportCanvas = document.getElementById('exportCanvas');
-            const ctx = exportCanvas.getContext('2d');
-            
-            const baseWidth = canvas.clientWidth;
-            const baseHeight = baseWidth * 1.1; 
-            
-            const scaleFactor = 2; 
-            exportCanvas.width = baseWidth * scaleFactor;
-            exportCanvas.height = baseHeight * scaleFactor;
-            
-            ctx.scale(scaleFactor, scaleFactor);
-            
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, baseWidth, baseHeight);
-            
-            const fImg = document.getElementById('faceBase');
-            const faceWidth = baseWidth * 0.85;
-            const faceHeight = faceWidth * (fImg.naturalHeight / fImg.naturalWidth);
-            const faceX = (baseWidth - faceWidth) / 2;
-            const faceY = (baseHeight - faceHeight) / 2;
-            ctx.drawImage(fImg, faceX, faceY, faceWidth, faceHeight);
-
-            canvas.querySelectorAll('.part-box').forEach(box => {
-                const img = box.querySelector('img');
-                const posX = parseFloat(box.style.left);
-                const posY = parseFloat(box.style.top);
-                const rot = parseFloat(box.dataset.rotation || 0);
-                const sca = parseFloat(box.dataset.scale || 1);
-                
-                const boxSize = BOX_BASE_SIZE;
-                const imgRatio = img.naturalWidth / img.naturalHeight;
-                let drawW, drawH;
-                
-                const maxInBox = boxSize * 0.95;
-                if (imgRatio > 1) {
-                    drawW = maxInBox;
-                    drawH = maxInBox / imgRatio;
-                } else {
-                    drawH = maxInBox;
-                    drawW = maxInBox * imgRatio;
-                }
-
-                ctx.save();
-                ctx.translate(posX + boxSize / 2, posY + boxSize / 2);
-                ctx.rotate(rot * Math.PI / 180);
-                ctx.scale(sca, sca);
-                ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
-                ctx.restore();
-            });
-            
-            try {
-                const link = document.createElement('a');
-                link.download = 'fukuwarai_shirokuma.png';
-                link.href = exportCanvas.toDataURL('image/png');
-                link.click();
-            } catch (err) {
-                showMessage("保存に失敗しました。");
-            }
-        });
-    </script>
+        <p>© 2026 6zr / fuku2026</p>
+        <div class="mt-4 flex gap-4">
+            <a href="https://github.com/6zr/fuku2026" class="hover:text-slate-600 underline">GitHub Repository</a>
+        </div>
+    </footer>
 </body>
 </html>

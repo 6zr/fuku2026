@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VW1EHGZ7WM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-VW1EHGZ7WM');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>シロクマのお餅焼き</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #fce7d2;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+        }
+        .stage {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .bear-face-system {
+            position: relative;
+            width: 240px;
+            height: 264px;
+            margin-bottom: -40px;
+            z-index: 1;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* わくわく：小刻みな揺れ */
+        @keyframes wakuwaku {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2px, -2px) rotate(1deg); }
+            75% { transform: translate(-2px, -1px) rotate(-1deg); }
+        }
+        .anim-wakuwaku {
+            animation: wakuwaku 0.2s infinite;
+        }
+
+        /* 期待：ピョコピョコ跳ねる */
+        @keyframes hopping {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .anim-hopping {
+            animation: hopping 0.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        .face-base {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            pointer-events: none;
+        }
+        .fuku-part {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+        }
+        .fuku-part img { width: 100%; height: 100%; object-fit: contain; }
+
+        #emotion-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        .grill-container {
+            position: relative;
+            width: 300px;
+            height: 180px;
+            background: #333;
+            border: 8px solid #555;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 0 #222;
+        }
+        .grill-mesh {
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .fire-glow {
+            position: absolute;
+            width: 80%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, transparent 70%);
+            animation: flicker 1.5s infinite alternate;
+        }
+        @keyframes flicker {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .mochi {
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.2);
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+        .mochi-skin {
+            width: 80%;
+            height: 80%;
+            border-radius: 10px;
+            transition: background 10s linear, transform 2.5s ease-in-out;
+        }
+
+        .tray {
+            width: 100%;
+            height: 100px;
+            background: #d4a373;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .dragging {
+            position: fixed !important;
+            z-index: 1000 !important;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        #message {
+            position: fixed;
+            top: 25%;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #d85c27;
+            text-shadow: 2px 2px 0 white;
+            pointer-events: none;
+            display: none;
+            z-index: 2000;
+            text-align: center;
+            width: 100%;
+        }
+
+        .url-input-container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 8px;
+            border-radius: 12px;
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            border: 1px solid #d4a373;
+        }
+        .url-input {
+            flex-grow: 1;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+            outline: none;
+        }
+        .url-btn {
+            background: #d85c27;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="text-center mt-2 w-full flex flex-col items-center">
+        <h1 class="text-xl font-bold text-stone-700">シロクマのお餅焼き</h1>
+        <div class="url-input-container">
+            <input type="text" id="urlInput" class="url-input" placeholder="福笑いのURLをここに貼り付け">
+            <button id="loadUrlBtn" class="url-btn">顔を読み込む</button>
+        </div>
+    </div>
+
+    <div id="message">おいしそう！</div>
+
+    <div class="stage">
+        <div class="bear-face-system" id="bearSystem">
+            <img src="https://6zr.github.io/fuku2026/images/face.png" class="face-base" alt="シロクマ" crossorigin="anonymous">
+            <div id="fuku-parts-container"></div>
+            <svg id="emotion-layer" viewBox="0 0 240 264">
+                <!-- 眉間のしわ -->
+                <g id="wrinkle" style="display:none;" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-linecap="round">
+                    <line x1="-4" y1="-8" x2="-4" y2="8" />
+                    <line x1="4" y1="-8" x2="4" y2="8" />
+                </g>
+                <!-- 喜びの星 -->
+                <g id="joy-stars" style="display:none;" fill="#ffcc00">
+                    <path d="M50 60 l3-3 3 3-3 3z M190 60 l3-3 3 3-3 3z" />
+                </g>
+                <!-- びっくり -->
+                <g id="surprise" style="display:none;">
+                    <text x="200" y="60" font-family="Arial" font-weight="bold" font-size="40" fill="#ff4500" transform="rotate(15, 200, 60)">!</text>
+                </g>
+                <!-- 涙 -->
+                <g id="tears" style="display:none;" fill="#4169e1" opacity="0.8">
+                    <rect id="tearL" x="0" y="0" width="6" height="12" rx="3" />
+                    <rect id="tearR" x="0" y="0" width="6" height="12" rx="3" />
+                </g>
+            </svg>
+        </div>
+        
+        <div class="grill-container" id="grill">
+            <div class="fire-glow"></div>
+            <div class="grill-mesh"></div>
+        </div>
+    </div>
+
+    <div class="tray" id="tray">
+        <div class="mochi" id="m1"></div>
+        <div class="mochi" id="m2"></div>
+        <div class="mochi" id="m3"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-slate-400 text-sm flex flex-col items-center">
+        <!-- Back to Top Link -->
+        <div class="mb-4">
+            <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                トップへもどる
+            </a>
+        </div>
+        
+        <p>© 2026 6zr / fuku2026</p>
+        <div class="mt-4 flex gap-4">
+            <a href="https://github.com/6zr/fuku2026" class="hover:text-slate-600 underline">GitHub Repository</a>
+        </div>
+    </footer>
+</div>
+
+<script>
+    const grill = document.getElementById('grill');
+    const tray = document.getElementById('tray');
+    const bearSystem = document.getElementById('bearSystem');
+    const fukuContainer = document.getElementById('fuku-parts-container');
+    const message = document.getElementById('message');
+    const urlInput = document.getElementById('urlInput');
+    const loadUrlBtn = document.getElementById('loadUrlBtn');
+
+    const DEFAULT_FACE_DATA = "W3siaWQiOiJub3NlIiwieCI6MjIxLCJ5IjozNDQsInIiOjExLCJzIjoxLjZ9LHsiaWQiOiJleWVSIiwieCI6MzQxLCJ5IjoyNjYsInIiOjAsInMiOjEuNH0seyJpZCI6ImV5ZUwiLCJ4IjoxNjQsInkiOjIyNywiciI6MCwicyI6MS40fV0=";
+
+    const effects = {
+        wrinkle: document.getElementById('wrinkle'),
+        joyStars: document.getElementById('joy-stars'),
+        surprise: document.getElementById('surprise'),
+        tears: document.getElementById('tears')
+    };
+
+    let eyePositions = { L: {x:80, y:110}, R: {x:160, y:110} };
+    let activeMochi = null;
+    let offsetX = 0;
+    let offsetY = 0;
+    let grillMochiCount = 0;
+    let mochiStates = new Map(); // 各お餅の状態を管理
+
+    function loadFukuwarai(sourceUrl) {
+        let encodedData = null;
+        try {
+            const url = new URL(sourceUrl || window.location.href);
+            encodedData = url.searchParams.get('f');
+        } catch (e) {
+            if (sourceUrl && sourceUrl.includes('f=')) {
+                encodedData = new URLSearchParams(sourceUrl.split('?')[1]).get('f');
+            }
+        }
+
+        if (!encodedData && !sourceUrl) {
+            encodedData = DEFAULT_FACE_DATA;
+        }
+
+        if (encodedData) {
+            try {
+                const state = JSON.parse(atob(encodedData));
+                fukuContainer.innerHTML = '';
+                let eyesFound = { L: false, R: false };
+
+                state.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'fuku-part';
+                    const scaleUI = 240 / 640; 
+                    const posX = p.x * scaleUI;
+                    const posY = p.y * scaleUI;
+                    div.style.left = posX + 'px';
+                    div.style.top = posY + 'px';
+
+                    if (p.id === 'eyeL') { eyePositions.L = {x: posX+20, y: posY+20}; eyesFound.L = true; }
+                    if (p.id === 'eyeR') { eyePositions.R = {x: posX+20, y: posY+20}; eyesFound.R = true; }
+
+                    const img = document.createElement('img');
+                    img.src = `https://6zr.github.io/fuku2026/images/${getFileName(p.id)}`;
+                    img.style.transform = `rotate(${p.r}deg) scale(${p.s})`;
+                    img.crossOrigin = "anonymous";
+                    div.appendChild(img);
+                    fukuContainer.appendChild(div);
+                });
+
+                if (!eyesFound.L && eyesFound.R) eyePositions.L = {x: eyePositions.R.x - 80, y: eyePositions.R.y};
+                if (!eyesFound.R && eyesFound.L) eyePositions.R = {x: eyePositions.L.x + 80, y: eyePositions.L.y};
+
+                if (sourceUrl) showEffect("顔を読み込みました！");
+            } catch(e) { 
+                if (sourceUrl) showEffect("読み込みに失敗しました");
+            }
+        }
+    }
+
+    loadUrlBtn.addEventListener('click', () => loadFukuwarai(urlInput.value));
+
+    function getFileName(id) {
+        const map = {
+            eyeL: 'eye_l.png', eyeR: 'eye_r.png', nose: 'nose.png',
+            handL: 'hand_l.png', handR: 'hand_r.png', antena: 'antena.png',
+            mikan: 'mikan.png', maguro: 'maguro.png'
+        };
+        return map[id] || '';
+    }
+
+    function createMochi() {
+        const m = document.createElement('div');
+        m.className = 'mochi';
+        m.appendChild(document.createElement('div')).className = 'mochi-skin';
+        return m;
+    }
+
+    function onStart(e) {
+        const target = e.target.closest('.mochi');
+        if (!target || target.classList.contains('on-grill')) return;
+        e.preventDefault();
+        const touch = e.type.includes('touch') ? e.touches[0] : e;
+        activeMochi = target;
+        const rect = activeMochi.getBoundingClientRect();
+        offsetX = touch.clientX - rect.left;
+        offsetY = touch.clientY - rect.top;
+        activeMochi.classList.add('dragging');
+        document.body.appendChild(activeMochi);
+        moveAt(touch.clientX, touch.clientY);
+    }
+
+    function moveAt(x, y) {
+        if (!activeMochi) return;
+        activeMochi.style.left = (x - offsetX) + 'px';
+        activeMochi.style.top = (y - offsetY) + 'px';
+        const grillRect = grill.getBoundingClientRect();
+        if (x > grillRect.left - 20 && x < grillRect.right + 20 &&
+            y > grillRect.top - 20 && y < grillRect.bottom + 20) {
+            updateEmotion('hot');
+        }
+    }
+
+    function onMove(e) {
+        if (!activeMochi) return;
+        const touch = e.type.includes('touch') ? e.touches[0] : e;
+        moveAt(touch.clientX, touch.clientY);
+    }
+
+    function onEnd() {
+        if (!activeMochi) return;
+        const rect = activeMochi.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const grillRect = grill.getBoundingClientRect();
+
+        if (centerX > grillRect.left && centerX < grillRect.right &&
+            centerY > grillRect.top && centerY < grillRect.bottom) {
+            placeMochiOnGrill(activeMochi, centerX - grillRect.left, centerY - grillRect.top);
+        } else {
+            activeMochi.remove();
+            refillTray();
+            updateEmotion('default');
+        }
+        activeMochi?.classList.remove('dragging');
+        activeMochi = null;
+    }
+
+    function placeMochiOnGrill(mochi, x, y) {
+        mochi.classList.add('on-grill');
+        mochi.style.position = 'absolute';
+        mochi.style.left = (x - 35) + 'px';
+        mochi.style.top = (y - 35) + 'px';
+        grill.appendChild(mochi);
+        grillMochiCount++;
+        startToasting(mochi);
+        refillTray();
+        updateEmotion('default');
+    }
+
+    function refillTray() {
+        if (tray.children.length < 3) tray.appendChild(createMochi());
+    }
+
+    function startToasting(mochi) {
+        const skin = mochi.querySelector('.mochi-skin');
+        let heat = 0;
+        const interval = setInterval(() => {
+            heat += 1;
+            mochiStates.set(mochi, heat); // 状態を更新
+            
+            if (heat < 50) {
+                skin.style.background = `rgb(255, ${255 - heat}, ${255 - heat * 2})`;
+                // 焼き始めのわくわく状態を更新
+                updateEmotion('wakuwaku');
+            } else if (heat < 100) {
+                const swell = (heat - 50) / 25;
+                mochi.style.transform = `scale(${1 + swell * 0.15})`;
+                skin.style.transform = `scale(${1 + swell * 0.4}) translateY(-${swell * 8}px)`;
+                skin.style.background = `rgb(${255 - (heat-50)}, ${205 - (heat-50)*2}, 150)`;
+                // 期待（ぷっくり）状態を更新
+                updateEmotion('hopping');
+            } else if (heat === 100) {
+                updateEmotion('ready');
+                showEffect("食べごろ！");
+            } else if (heat > 160) {
+                updateEmotion('bad');
+                skin.style.background = "#331a00";
+            }
+            if (heat > 250) {
+                updateEmotion('fail');
+                clearInterval(interval);
+            }
+        }, 100);
+
+        mochi.onclick = () => {
+            if (heat >= 80) {
+                grillMochiCount--;
+                mochiStates.delete(mochi);
+                if (heat > 160) {
+                    showEffect("にがい...");
+                    updateEmotion('fail');
+                } else {
+                    showEffect("パクッ！もちもち！");
+                    updateEmotion('happy');
+                }
+                mochi.style.opacity = "0";
+                setTimeout(() => {
+                    mochi.remove();
+                    if (grillMochiCount === 0) updateEmotion('default');
+                }, 300);
+                clearInterval(interval);
+            }
+        };
+    }
+
+    function updateEmotion(type) {
+        // 全てのアニメーションクラスを一旦削除
+        bearSystem.classList.remove('anim-wakuwaku', 'anim-hopping');
+        Object.values(effects).forEach(el => el.style.display = 'none');
+        bearSystem.style.transform = "scale(1)";
+
+        const midX = (eyePositions.L.x + eyePositions.R.x) / 2;
+        const midY = (eyePositions.L.y + eyePositions.R.y) / 2;
+
+        // グリル上のお餅の状態を確認して、最も進んでいる状態に合わせる
+        if (type === 'wakuwaku' || type === 'hopping') {
+            let maxHeat = 0;
+            mochiStates.forEach(val => { if(val > maxHeat) maxHeat = val; });
+            
+            if (maxHeat > 0 && maxHeat < 50) {
+                bearSystem.classList.add('anim-wakuwaku');
+                return;
+            } else if (maxHeat >= 50 && maxHeat < 100) {
+                bearSystem.classList.add('anim-hopping');
+                return;
+            }
+        }
+
+        switch(type) {
+            case 'hot':
+                effects.surprise.style.display = 'block';
+                bearSystem.style.transform = "translateY(-5px) rotate(2deg)";
+                break;
+            case 'ready':
+                effects.joyStars.style.display = 'block';
+                bearSystem.classList.add('anim-hopping');
+                break;
+            case 'happy':
+                effects.joyStars.style.display = 'block';
+                bearSystem.style.transform = "scale(1.2) rotate(5deg)";
+                setTimeout(() => { if (grillMochiCount === 0) updateEmotion('default'); }, 1000);
+                break;
+            case 'bad':
+                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
+                effects.wrinkle.style.display = 'block';
+                break;
+            case 'fail':
+                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
+                effects.wrinkle.style.display = 'block';
+                document.getElementById('tearL').setAttribute('x', eyePositions.L.x - 3);
+                document.getElementById('tearL').setAttribute('y', eyePositions.L.y + 12);
+                document.getElementById('tearR').setAttribute('x', eyePositions.R.x - 3);
+                document.getElementById('tearR').setAttribute('y', eyePositions.R.y + 12);
+                effects.tears.style.display = 'block';
+                bearSystem.style.transform = "translateY(5px)";
+                break;
+            default:
+                // 何もない時は静止
+                break;
+        }
+    }
+
+    function showEffect(txt) {
+        message.textContent = txt;
+        message.style.display = 'block';
+        setTimeout(() => message.style.display = 'none', 1500);
+    }
+
+    document.querySelectorAll('.mochi').forEach(m => m.appendChild(document.createElement('div')).className = 'mochi-skin');
+    window.addEventListener('mousedown', onStart);
+    window.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+
+    loadFukuwarai();
+</script>
+
+</body>
+</html>
