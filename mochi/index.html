@@ -40,6 +40,26 @@
             padding: 10px;
             position: relative;
         }
+
+        /* Header Layout Fix */
+        .game-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding-top: 10px;
+            z-index: 100;
+        }
+
+        .header-top-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
         .stage {
             position: relative;
             width: 100%;
@@ -221,15 +241,13 @@
         }
 
         .score-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             background: rgba(255, 255, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 15px;
+            padding: 5px 12px;
+            border-radius: 12px;
             border: 2px solid #d4a373;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            flex-shrink: 0;
         }
 
         /* Result Overlay */
@@ -255,14 +273,13 @@
         }
 
         .url-input-container {
-            width: 90%;
-            max-width: 400px;
+            width: 95%;
+            max-width: 450px;
             background: rgba(255, 255, 255, 0.4);
             padding: 6px;
             border-radius: 12px;
             display: flex;
             gap: 6px;
-            margin: 5px 0;
             border: 1px solid rgba(212, 163, 115, 0.5);
         }
         .url-input {
@@ -281,6 +298,7 @@
             font-size: 11px;
             font-weight: bold;
             cursor: pointer;
+            white-space: nowrap;
         }
 
         footer {
@@ -304,17 +322,19 @@
             </div>
         </div>
 
-        <div class="text-center mt-2 w-full flex flex-col items-center">
-            <h1 class="text-xl font-bold text-stone-700">シロクマのお餅焼き</h1>
+        <!-- Header Structure -->
+        <div class="game-header">
+            <div class="header-top-row">
+                <h1 class="text-lg font-bold text-stone-700">シロクマのお餅焼き</h1>
+                <div class="score-panel">
+                    <div class="text-[10px] text-stone-500 font-bold leading-tight">たべたお餅</div>
+                    <div id="mochi-count" class="text-lg font-black text-orange-600 leading-none">0</div>
+                </div>
+            </div>
             <div class="url-input-container">
                 <input type="text" id="urlInput" class="url-input" placeholder="福笑いのURLを貼り付け">
                 <button id="loadUrlBtn" class="url-btn">顔を更新</button>
             </div>
-        </div>
-
-        <div class="score-panel">
-            <div class="text-xs text-stone-500 font-bold">たべたお餅</div>
-            <div id="mochi-count" class="text-xl font-black text-orange-600">0</div>
         </div>
 
         <div id="message">おいしそうだワン！</div>
@@ -572,7 +592,6 @@
                 showEffect(score + "点：生焼けワン");
                 updateEmotion('raw');
             } else if (heat >= 80 && heat <= 120) {
-                // 100がピーク
                 score = 100 - Math.abs(100 - heat);
                 showEffect(score + "点：うまいワン！");
                 updateEmotion('happy');
@@ -697,7 +716,7 @@
 
     loadUrlBtn.addEventListener('click', () => {
         loadFukuwarai(urlInput.value);
-        showEffect("顔を読み込みました");
+        showEffect("顔を更新したワン！");
     });
 
     window.addEventListener('mousedown', onStart);
