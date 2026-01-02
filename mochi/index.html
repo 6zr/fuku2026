@@ -41,13 +41,12 @@
             position: relative;
         }
 
-        /* Header Layout Fix */
         .game-header {
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             padding-top: 10px;
             z-index: 100;
         }
@@ -57,7 +56,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 10px;
+            padding: 0 5px;
+        }
+
+        .score-row {
+            display: flex;
+            gap: 6px;
         }
 
         .stage {
@@ -67,7 +71,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: 5px;
             gap: 10px;
         }
         
@@ -132,20 +136,11 @@
 
         .fuku-part-box {
             position: absolute;
-            width: 37.5px;
-            height: 37.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 37.5px; height: 37.5px;
+            display: flex; align-items: center; justify-content: center;
             pointer-events: none;
-            transform-origin: center center;
         }
-        .fuku-part-img { 
-            max-width: 95%; 
-            max-height: 95%; 
-            object-fit: contain; 
-            display: block;
-        }
+        .fuku-part-img { max-width: 95%; max-height: 95%; object-fit: contain; }
 
         #emotion-layer {
             position: absolute;
@@ -156,14 +151,9 @@
         
         .grill-container {
             position: relative;
-            width: 280px;
-            height: 160px;
-            background: #333;
-            border: 8px solid #555;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 280px; height: 150px;
+            background: #333; border: 8px solid #555; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 8px 0 #222, 0 15px 25px rgba(0,0,0,0.1);
             z-index: 5;
         }
@@ -175,137 +165,58 @@
             background-size: 20px 20px;
             position: absolute; top: 0; left: 0;
         }
-        .fire-glow {
-            position: absolute; width: 80%; height: 60%;
-            background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, transparent 70%);
-            animation: flicker 1.5s infinite alternate;
-        }
-        @keyframes flicker {
-            0% { opacity: 0.5; transform: scale(1); }
-            100% { opacity: 0.8; transform: scale(1.1); }
-        }
 
         .mochi {
-            width: 60px; height: 60px;
-            background: #fff;
-            border-radius: 10px;
+            width: 55px; height: 55px;
+            background: #fff; border-radius: 10px;
             box-shadow: inset -3px -3px 8px rgba(0,0,0,0.1), 0 3px 5px rgba(0,0,0,0.2);
-            cursor: grab;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            z-index: 100;
-            transition: transform 0.1s;
+            cursor: grab; display: flex; align-items: center; justify-content: center;
+            position: absolute; z-index: 100; transition: transform 0.1s;
             touch-action: none;
         }
-        .mochi-skin {
-            width: 80%; height: 80%;
-            border-radius: 8px;
-            transition: background 10s linear, transform 2.5s ease-in-out;
-        }
+        .mochi-skin { width: 80%; height: 80%; border-radius: 8px; transition: background 10s linear, transform 2.5s ease-in-out; }
 
         .tray {
-            width: 100%;
-            height: 90px;
-            background: #d4a373;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            padding: 10px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-            margin-top: 20px;
+            width: 100%; height: 90px; background: #d4a373; border-radius: 20px 20px 0 0;
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            padding: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); margin-top: 15px;
         }
 
-        .dragging {
-            position: fixed !important;
-            z-index: 2000 !important;
-            pointer-events: none;
-            opacity: 0.9;
-        }
+        .dragging { position: fixed !important; z-index: 2000 !important; pointer-events: none; opacity: 0.9; }
 
         #message {
-            position: fixed;
-            top: 20%;
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #d85c27;
-            text-shadow: 2px 2px 0 white;
-            pointer-events: none;
-            display: none;
-            z-index: 2000;
-            text-align: center;
-            width: 100%;
+            position: fixed; top: 20%; font-size: 1.4rem; font-weight: bold; color: #d85c27;
+            text-shadow: 2px 2px 0 white; pointer-events: none; display: none; z-index: 2000;
+            text-align: center; width: 100%;
         }
 
         .score-panel {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 5px 12px;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 10px;
             border: 2px solid #d4a373;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            flex-shrink: 0;
+            min-width: 55px;
         }
 
-        /* Result Overlay */
         #result-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 3000; display: none; align-items: center; justify-content: center;
         }
         .result-card {
-            background: white;
-            padding: 30px;
-            border-radius: 24px;
-            text-align: center;
-            max-width: 320px;
-            width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border: 5px solid #d85c27;
+            background: white; padding: 30px; border-radius: 24px; text-align: center;
+            max-width: 320px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 5px solid #d85c27;
         }
 
         .url-input-container {
-            width: 95%;
-            max-width: 450px;
-            background: rgba(255, 255, 255, 0.4);
-            padding: 6px;
-            border-radius: 12px;
-            display: flex;
-            gap: 6px;
+            width: 95%; max-width: 450px; background: rgba(255, 255, 255, 0.4);
+            padding: 6px; border-radius: 12px; display: flex; gap: 6px;
             border: 1px solid rgba(212, 163, 115, 0.5);
         }
-        .url-input {
-            flex-grow: 1;
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 11px;
-            outline: none;
-        }
-        .url-btn {
-            background: #d85c27;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        footer {
-            width: 100%;
-            padding: 20px 0;
-            background: transparent;
-        }
+        .url-input { flex-grow: 1; padding: 4px 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 11px; outline: none; }
+        .url-btn { background: #d85c27; color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -315,20 +226,36 @@
         <!-- Result Overlay -->
         <div id="result-overlay">
             <div class="result-card">
-                <h2 class="text-2xl font-bold text-stone-700 mb-2">判定結果</h2>
-                <div id="result-score" class="text-5xl font-black text-orange-500 mb-4">80点</div>
+                <h2 class="text-xl font-bold text-stone-700 mb-2">ごちそうさまでした！</h2>
+                
+                <div class="flex flex-col gap-4 mb-6 mt-4">
+                    <div class="bg-orange-50 p-3 rounded-xl border border-orange-200">
+                        <div class="text-xs text-orange-400 font-bold">平均点</div>
+                        <div id="result-avg-score" class="text-4xl font-black text-orange-600">80点</div>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                        <div class="text-xs text-blue-400 font-bold">最高点（ベストショット）</div>
+                        <div id="result-best-score" class="text-3xl font-black text-blue-600">95点</div>
+                    </div>
+                </div>
+
                 <div id="result-comment" class="text-lg text-stone-600 mb-6 font-bold">うまいワン</div>
                 <button onclick="closeResult()" class="bg-stone-700 text-white px-8 py-3 rounded-full font-bold hover:bg-stone-800 transition-all">もう一度焼く</button>
             </div>
         </div>
 
-        <!-- Header Structure -->
         <div class="game-header">
             <div class="header-top-row">
-                <h1 class="text-lg font-bold text-stone-700">シロクマのお餅焼き</h1>
-                <div class="score-panel">
-                    <div class="text-[10px] text-stone-500 font-bold leading-tight">たべたお餅</div>
-                    <div id="mochi-count" class="text-lg font-black text-orange-600 leading-none">0</div>
+                <h1 class="text-sm font-bold text-stone-700">シロクマのお餅焼き</h1>
+                <div class="score-row">
+                    <div class="score-panel">
+                        <div class="text-[8px] text-stone-500 font-bold leading-tight">今回の最高</div>
+                        <div id="best-score" class="text-sm font-black text-blue-600 leading-none">0</div>
+                    </div>
+                    <div class="score-panel">
+                        <div class="text-[8px] text-stone-500 font-bold leading-tight">たべた数</div>
+                        <div id="mochi-count" class="text-sm font-black text-orange-600 leading-none">0</div>
+                    </div>
                 </div>
             </div>
             <div class="url-input-container">
@@ -365,7 +292,7 @@
             </div>
             
             <div class="grill-container" id="grill">
-                <div class="fire-glow"></div>
+                <div class="fire-glow" style="position: absolute; width: 80%; height: 60%; background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, transparent 70%); animation: flicker 1.5s infinite alternate;"></div>
                 <div class="grill-mesh"></div>
             </div>
         </div>
@@ -376,7 +303,7 @@
         </div>
     </div>
 
-    <footer class="text-slate-400 text-sm flex flex-col items-center">
+    <footer class="text-slate-400 text-sm flex flex-col items-center py-6">
         <div class="mb-4">
             <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,6 +317,7 @@
 </div>
 
 <script>
+    // --- 状態管理用変数 ---
     const grill = document.getElementById('grill');
     const tray = document.getElementById('tray');
     const bearSystem = document.getElementById('bearSystem');
@@ -400,8 +328,11 @@
     const loadUrlBtn = document.getElementById('loadUrlBtn');
     const finishBtn = document.getElementById('finishBtn');
     const mochiCountEl = document.getElementById('mochi-count');
+    const bestScoreEl = document.getElementById('best-score');
+    
     const resultOverlay = document.getElementById('result-overlay');
-    const resultScoreEl = document.getElementById('result-score');
+    const resultAvgScoreEl = document.getElementById('result-avg-score');
+    const resultBestScoreEl = document.getElementById('result-best-score');
     const resultCommentEl = document.getElementById('result-comment');
 
     const DEFAULT_FACE_DATA = "W3siaWQiOiJleWVMIiwieCI6MTU4LCJ5IjoyMzMsInIiOjAsInMiOjEuMn0seyJpZCI6ImV5ZVIiLCJ4IjozMjcsInkiOjI2OCwiciI6MCwicyI6MS4yfSx7ImlkIjoibm9zZSIsIngiOjIyNCwieSI6MzUwLCJyIjowLCJzIjoxLjN9XQ==";
@@ -416,18 +347,16 @@
     let eyePositions = { L: {x:80, y:100}, R: {x:160, y:100} };
     let grillMochiCount = 0;
     let totalEaten = 0;
-    let scores = [];
+    let currentSessionScores = []; // 今回の食事リスト（平均計算用）
+    let currentMaxScore = 0;       // 今回のセッション中の単発最高スコア
     let mochiStates = new Map();
     let activeMochi = null;
     let offsetX = 0, offsetY = 0;
 
+    // --- 福笑いデータ復元用 ---
     function extractFaceData(input) {
         if (!input) return null;
-        try {
-            const url = new URL(input);
-            const f = url.searchParams.get('f');
-            if (f) return f;
-        } catch (e) {}
+        try { const url = new URL(input); const f = url.searchParams.get('f'); if (f) return f; } catch (e) {}
         const match = input.match(/[?&]f=([^&?#]+)/);
         if (match && match[1]) return decodeURIComponent(match[1]);
         if (input.length > 20 && /^[A-Za-z0-9+/=]+$/.test(input)) return input;
@@ -435,11 +364,7 @@
     }
 
     function getFileName(id) {
-        const map = {
-            eyeL: 'eye_l.png', eyeR: 'eye_r.png', nose: 'nose.png',
-            handL: 'hand_l.png', handR: 'hand_r.png', antena: 'antena.png',
-            mikan: 'mikan.png', maguro: 'maguro.png', capSanta: 'cap_santa.png'
-        };
+        const map = { eyeL: 'eye_l.png', eyeR: 'eye_r.png', nose: 'nose.png', handL: 'hand_l.png', handR: 'hand_r.png', antena: 'antena.png', mikan: 'mikan.png', maguro: 'maguro.png', capSanta: 'cap_santa.png' };
         return map[id] || '';
     }
 
@@ -448,7 +373,6 @@
         if (!encodedData && !sourceInput) {
             encodedData = extractFaceData(window.location.href) || DEFAULT_FACE_DATA;
         }
-
         if (encodedData) {
             try {
                 const state = JSON.parse(atob(encodedData));
@@ -475,6 +399,7 @@
         }
     }
 
+    // --- ゲームロジック ---
     function createMochi() {
         const m = document.createElement('div');
         m.className = 'mochi';
@@ -485,16 +410,13 @@
     }
 
     function refillTray() {
-        while (tray.children.length < 3) {
-            tray.appendChild(createMochi());
-        }
+        while (tray.children.length < 3) tray.appendChild(createMochi());
     }
 
     function onStart(e) {
         const target = e.target.closest('.mochi');
         if (!target || target.classList.contains('on-grill')) return;
-        
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         const touch = e.type.includes('touch') ? e.touches[0] : e;
         activeMochi = target;
         const rect = activeMochi.getBoundingClientRect();
@@ -510,8 +432,7 @@
         activeMochi.style.left = (x - offsetX) + 'px';
         activeMochi.style.top = (y - offsetY) + 'px';
         const grillRect = grill.getBoundingClientRect();
-        if (x > grillRect.left - 20 && x < grillRect.right + 20 &&
-            y > grillRect.top - 20 && y < grillRect.bottom + 20) {
+        if (x > grillRect.left - 20 && x < grillRect.right + 20 && y > grillRect.top - 20 && y < grillRect.bottom + 20) {
             updateEmotion('hot');
         }
     }
@@ -529,8 +450,7 @@
         const centerY = rect.top + rect.height / 2;
         const grillRect = grill.getBoundingClientRect();
 
-        if (centerX > grillRect.left && centerX < grillRect.right &&
-            centerY > grillRect.top && centerY < grillRect.bottom) {
+        if (centerX > grillRect.left && centerX < grillRect.right && centerY > grillRect.top && centerY < grillRect.bottom) {
             placeMochiOnGrill(activeMochi, centerX - grillRect.left, centerY - grillRect.top);
         } else {
             activeMochi.remove();
@@ -544,8 +464,8 @@
     function placeMochiOnGrill(mochi, x, y) {
         mochi.classList.add('on-grill');
         mochi.style.position = 'absolute';
-        mochi.style.left = (x - 30) + 'px';
-        mochi.style.top = (y - 30) + 'px';
+        mochi.style.left = (x - 27.5) + 'px';
+        mochi.style.top = (y - 27.5) + 'px';
         grill.appendChild(mochi);
         grillMochiCount++;
         startToasting(mochi);
@@ -559,7 +479,6 @@
         const interval = setInterval(() => {
             heat += 1;
             mochiStates.set(mochi, heat);
-            
             if (heat < 50) {
                 skin.style.background = `rgb(255, ${255 - heat}, ${255 - heat * 2})`;
                 updateEmotion('wakuwaku');
@@ -585,41 +504,29 @@
         mochi.onclick = () => {
             grillMochiCount--;
             mochiStates.delete(mochi);
-            
             let score = 0;
-            if (heat < 80) {
-                score = Math.floor((heat / 80) * 50);
-                showEffect(score + "点：生焼けワン");
-                updateEmotion('raw');
-            } else if (heat >= 80 && heat <= 120) {
-                score = 100 - Math.abs(100 - heat);
-                showEffect(score + "点：うまいワン！");
-                updateEmotion('happy');
-            } else if (heat > 120 && heat <= 160) {
-                score = 80 - (heat - 120);
-                showEffect(score + "点：もうちょっとだねワン");
-                updateEmotion('bad');
-            } else {
-                score = -20;
-                showEffect("にがいよ〜ワン（涙）");
-                updateEmotion('fail');
-            }
+            if (heat < 80) { score = Math.floor((heat / 80) * 50); showEffect(score + "点：生焼けワン"); updateEmotion('raw'); }
+            else if (heat >= 80 && heat <= 120) { score = 100 - Math.abs(100 - heat); showEffect(score + "点：うまいワン！"); updateEmotion('happy'); }
+            else if (heat > 120 && heat <= 160) { score = 80 - (heat - 120); showEffect(score + "点：もうちょっとだねワン"); updateEmotion('bad'); }
+            else { score = -20; showEffect("にがいよ〜ワン（涙）"); updateEmotion('fail'); }
             
-            scores.push(score);
+            // スコアを記録
+            currentSessionScores.push(score);
+            
+            // セッション内最高記録を更新
+            if (score > currentMaxScore) {
+                currentMaxScore = score;
+                bestScoreEl.textContent = currentMaxScore;
+            }
+
             totalEaten++;
             mochiCountEl.textContent = totalEaten;
             if (totalEaten >= 1) {
                 finishBtn.style.opacity = "1";
                 finishBtn.style.pointerEvents = "auto";
             }
-
             mochi.style.opacity = "0";
-            setTimeout(() => {
-                mochi.remove();
-                if (grillMochiCount === 0) {
-                    setTimeout(() => { if (grillMochiCount === 0) updateEmotion('default'); }, 1500);
-                }
-            }, 300);
+            setTimeout(() => { mochi.remove(); if (grillMochiCount === 0) setTimeout(() => { if (grillMochiCount === 0) updateEmotion('default'); }, 1500); }, 300);
             clearInterval(interval);
         };
     }
@@ -628,71 +535,46 @@
         bearSystem.classList.remove('anim-wakuwaku', 'anim-hopping');
         Object.values(effects).forEach(el => el.style.display = 'none');
         bearSystem.style.transform = "scale(1)";
-
         const midX = (eyePositions.L.x + eyePositions.R.x) / 2;
         const midY = (eyePositions.L.y + eyePositions.R.y) / 2;
 
         if (type === 'wakuwaku' || type === 'hopping') {
             let maxHeat = 0;
             mochiStates.forEach(val => { if(val > maxHeat) maxHeat = val; });
-            if (maxHeat > 0 && maxHeat < 50) {
-                bearSystem.classList.add('anim-wakuwaku');
-                return;
-            } else if (maxHeat >= 50 && maxHeat < 100) {
-                bearSystem.classList.add('anim-hopping');
-                return;
-            }
+            if (maxHeat > 0 && maxHeat < 50) { bearSystem.classList.add('anim-wakuwaku'); return; }
+            else if (maxHeat >= 50 && maxHeat < 100) { bearSystem.classList.add('anim-hopping'); return; }
         }
-
         switch(type) {
-            case 'hot':
-                effects.surprise.style.display = 'block';
-                bearSystem.style.transform = "translateY(-4px) rotate(1deg)";
-                break;
-            case 'ready':
-                effects.joyStars.style.display = 'block';
-                bearSystem.classList.add('anim-hopping');
-                break;
-            case 'happy':
-                effects.joyStars.style.display = 'block';
-                bearSystem.style.transform = "scale(1.1) rotate(3deg)";
-                break;
-            case 'raw':
-                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
-                effects.wrinkle.style.display = 'block';
-                bearSystem.style.transform = "scale(0.95) translateY(2px)";
-                break;
-            case 'bad':
-                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
-                effects.wrinkle.style.display = 'block';
-                break;
-            case 'fail':
-                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`);
-                effects.wrinkle.style.display = 'block';
-                document.getElementById('tearL').setAttribute('x', eyePositions.L.x - 3);
-                document.getElementById('tearL').setAttribute('y', eyePositions.L.y + 12);
-                document.getElementById('tearR').setAttribute('x', eyePositions.R.x - 3);
-                document.getElementById('tearR').setAttribute('y', eyePositions.R.y + 12);
-                effects.tears.style.display = 'block';
-                bearSystem.style.transform = "translateY(3px)";
-                break;
-            case 'default':
-                bearSystem.style.transform = "scale(1)";
-                break;
+            case 'hot': effects.surprise.style.display = 'block'; bearSystem.style.transform = "translateY(-4px) rotate(1deg)"; break;
+            case 'ready': effects.joyStars.style.display = 'block'; bearSystem.classList.add('anim-hopping'); break;
+            case 'happy': effects.joyStars.style.display = 'block'; bearSystem.style.transform = "scale(1.1) rotate(3deg)"; break;
+            case 'raw': effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`); effects.wrinkle.style.display = 'block'; bearSystem.style.transform = "scale(0.95) translateY(2px)"; break;
+            case 'bad': effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`); effects.wrinkle.style.display = 'block'; break;
+            case 'fail': 
+                effects.wrinkle.setAttribute('transform', `translate(${midX}, ${midY - 18})`); effects.wrinkle.style.display = 'block';
+                document.getElementById('tearL').setAttribute('x', eyePositions.L.x - 3); document.getElementById('tearL').setAttribute('y', eyePositions.L.y + 12);
+                document.getElementById('tearR').setAttribute('x', eyePositions.R.x - 3); document.getElementById('tearR').setAttribute('y', eyePositions.R.y + 12);
+                effects.tears.style.display = 'block'; bearSystem.style.transform = "translateY(3px)"; break;
+            case 'default': bearSystem.style.transform = "scale(1)"; break;
         }
     }
 
     function showEffect(txt) {
-        message.textContent = txt;
-        message.style.display = 'block';
+        message.textContent = txt; message.style.display = 'block';
         setTimeout(() => { if(message.textContent === txt) message.style.display = 'none'; }, 1800);
     }
 
+    // --- 判定完了ボタンの処理 ---
     finishBtn.onclick = () => {
-        if (scores.length === 0) return;
-        const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-        resultScoreEl.textContent = avg + "点";
+        if (currentSessionScores.length === 0) return;
         
+        // 平均点を計算
+        const avg = Math.round(currentSessionScores.reduce((a, b) => a + b, 0) / currentSessionScores.length);
+        
+        // リザルト画面に数値をセット
+        resultAvgScoreEl.textContent = avg + "点";
+        resultBestScoreEl.textContent = currentMaxScore + "点";
+
         let comment = "";
         if (avg >= 100) comment = "かんぺきワン！";
         else if (avg >= 80) comment = "うまいワン";
@@ -706,19 +588,27 @@
 
     window.closeResult = () => {
         resultOverlay.style.display = 'none';
-        scores = [];
+        
+        // 「もう一度焼く」で全ての記録を完全にリセット
+        currentSessionScores = [];
+        currentMaxScore = 0;
         totalEaten = 0;
+        
+        // 表示のリセット
+        bestScoreEl.textContent = "0";
         mochiCountEl.textContent = "0";
         finishBtn.style.opacity = "0";
         finishBtn.style.pointerEvents = "none";
+        
         updateEmotion('default');
     };
 
     loadUrlBtn.addEventListener('click', () => {
         loadFukuwarai(urlInput.value);
-        showEffect("顔を更新したワン！");
+        showEffect("顔を読み込みました");
     });
 
+    // --- イベントリスナー ---
     window.addEventListener('mousedown', onStart);
     window.addEventListener('touchstart', onStart, { passive: false });
     window.addEventListener('mousemove', onMove);
