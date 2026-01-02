@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VW1EHGZ7WM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-VW1EHGZ7WM');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>福熊大漁旗シューティング</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #fecdd3;
+            font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            touch-action: none;
+            user-select: none;
+        }
+        canvas {
+            display: block;
+            background: #fda4af;
+        }
+        #ui-layer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .stats-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border-bottom: 4px solid #e11d48;
+            color: #881337;
+            pointer-events: auto;
+            display: flex;
+            gap: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(136, 19, 55, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .btn-start {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 12px 40px;
+            border-radius: 9999px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #b45309;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div class="stats-box">
+            <div class="flex flex-col">
+                <span class="text-[10px] uppercase font-bold opacity-60">得点</span>
+                <span id="score-val" class="text-2xl font-black">000000</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-[10px] uppercase font-bold opacity-60">体力</span>
+                <div class="flex items-center gap-1">
+                    <span class="text-rose-600">❤️</span>
+                    <span id="hp-val" class="text-2xl font-black">x3</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="overlay">
+        <h1 id="title" class="text-4xl font-black mb-4 text-yellow-300 text-center tracking-tighter italic">新春・福熊大漁旗</h1>
+        <p id="message" class="mb-6 text-lg text-center px-6 leading-relaxed">
+            魚に餅をあげて満足してもらおう。
+        </p>
+        <button class="btn-start" onclick="initGame()">開始</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score-val');
+    const hpEl = document.getElementById('hp-val');
+    const overlay = document.getElementById('overlay');
+    const titleEl = document.getElementById('title');
+    const messageEl = document.getElementById('message');
+
+    const IMAGES_BASE = "https://6zr.github.io/fuku2026/fishoot/images/";
+
+    const PLAYER_IMG = new Image();
+    PLAYER_IMG.src = IMAGES_BASE + "bear.png";
+    PLAYER_IMG.crossOrigin = "anonymous";
+
+    // 魚の設定
+    const ENEMY_TYPES = [
+        { id: 'fish01', baseWidth: 456, hp: 24, speed: 1.2, score: 5000, weight: 5,  pattern: 'linear', isWhale: true }, 
+        { id: 'fish02', baseWidth: 150, hp: 12, speed: 1.8, score: 1200, weight: 30, pattern: 'linear' },               
+        { id: 'fish03', baseWidth: 110, hp: 1,  speed: 3.5, score: 500,  weight: 25, pattern: 'sin' },                  
+        { id: 'fish04', baseWidth: 70,  hp: 1,  speed: 5.8, score: 800,  weight: 40, pattern: 'linear' }                
+    ];
+
+    ENEMY_TYPES.forEach(type => {
+        const img = new Image();
+        img.src = `${IMAGES_BASE}${type.id}.png`;
+        img.crossOrigin = "anonymous";
+        type.img = img;
+    });
+
+    let gameActive = false;
+    let score = 0;
+    let hp = 3;
+    let player = { 
+        x: 100, 
+        y: 100, 
+        targetX: 100, 
+        targetY: 100, 
+        damageFrame: 0, 
+        width: 100 
+    };
+    let bullets = [];
+    let enemies = [];
+    let frame = 0;
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function handleInput(e) {
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        const y = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetX = x;
+        player.targetY = y;
+    }
+    window.addEventListener('mousemove', handleInput);
+    window.addEventListener('touchstart', handleInput);
+    window.addEventListener('touchmove', (e) => { 
+        handleInput(e); 
+        e.preventDefault(); 
+    }, { passive: false });
+
+    function initGame() {
+        score = 0; hp = 3; bullets = []; enemies = []; frame = 0;
+        player.x = 100; player.y = canvas.height / 2;
+        player.targetX = player.x; player.targetY = player.y;
+        scoreEl.textContent = "000000";
+        hpEl.textContent = `x${hp}`;
+        overlay.style.display = 'none';
+        gameActive = true;
+        requestAnimationFrame(update);
+    }
+
+    function spawnEnemy() {
+        const totalWeight = ENEMY_TYPES.reduce((sum, t) => sum + t.weight, 0);
+        let random = Math.random() * totalWeight;
+        let type = ENEMY_TYPES[0];
+        for (const t of ENEMY_TYPES) {
+            if (random < t.weight) { type = t; break; }
+            random -= t.weight;
+        }
+        enemies.push({
+            x: canvas.width + 500,
+            y: Math.random() * (canvas.height - 250) + 125,
+            startY: 0, 
+            ...type,
+            currentSat: 0,
+            isSatisfied: false,
+            satAnimFrame: 0,
+            jumpY: 0,
+            hitFlash: 0,
+            angle: Math.random() * Math.PI * 2
+        });
+        enemies[enemies.length-1].startY = enemies[enemies.length-1].y;
+    }
+
+    function update() {
+        if (!gameActive) return;
+        frame++;
+
+        player.x += (player.targetX - player.x) * 0.15;
+        player.y += (player.targetY - player.y) * 0.15;
+        if (player.damageFrame > 0) player.damageFrame--;
+
+        if (frame % 7 === 0) {
+            bullets.push({ x: player.x + 30, y: player.y, r: 6 });
+        }
+
+        const spawnRate = Math.max(15, 45 - Math.floor(score / 15000));
+        if (frame % spawnRate === 0) spawnEnemy();
+
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].x += 24;
+            if (bullets[i].x > canvas.width + 50) bullets.splice(i, 1);
+        }
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            if (e.hitFlash > 0) e.hitFlash--;
+
+            if (e.isSatisfied) {
+                e.satAnimFrame++;
+                if (e.satAnimFrame < 40) {
+                    const jumpProgress = Math.min(1, (e.satAnimFrame - 20) / 20);
+                    if (e.satAnimFrame >= 20) e.jumpY = Math.sin(jumpProgress * Math.PI) * -180;
+                } else {
+                    e.x += e.speed * 18;
+                }
+                if (e.x > canvas.width + 600) enemies.splice(i, 1);
+                continue;
+            }
+
+            e.x -= e.speed;
+            if (e.pattern === 'sin') {
+                e.angle += 0.08;
+                e.y = e.startY + Math.sin(e.angle) * 150; 
+            }
+
+            for (let j = bullets.length - 1; j >= 0; j--) {
+                const b = bullets[j];
+                const dx = b.x - e.x;
+                const dy = b.y - (e.y + e.jumpY);
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                const hitRadius = e.baseWidth * 0.45;
+                if (dist < hitRadius + b.r) {
+                    bullets.splice(j, 1);
+                    e.currentSat++;
+                    e.hitFlash = 3;
+                    if (e.currentSat >= e.hp) {
+                        e.isSatisfied = true;
+                        score += e.score;
+                        scoreEl.textContent = score.toString().padStart(6, '0');
+                    }
+                }
+            }
+
+            const pdist = Math.sqrt((player.x - e.x)**2 + (player.y - e.y)**2);
+            const playerHitRadius = e.baseWidth * 0.35 + (player.width * 0.3);
+            if (pdist < playerHitRadius && player.damageFrame === 0 && !e.isSatisfied) {
+                hp--;
+                player.damageFrame = 80;
+                hpEl.textContent = `x${Math.max(0, hp)}`;
+                if (hp <= 0) {
+                    gameActive = false;
+                    setTimeout(endGame, 100);
+                    return;
+                }
+            }
+            if (e.x < -700) enemies.splice(i, 1);
+        }
+
+        draw();
+        requestAnimationFrame(update);
+    }
+
+    function draw() {
+        ctx.fillStyle = '#fda4af';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 背景文字
+        ctx.save();
+        ctx.font = 'bold 18vw serif';
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.08)'; 
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('謹賀新年', canvas.width/2, canvas.height/2);
+        ctx.restore();
+
+        // 弾（お餅をイメージした白い円）
+        bullets.forEach(b => {
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); 
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+            ctx.shadowBlur = 10; 
+            ctx.shadowColor = "white"; 
+            ctx.fill(); 
+            ctx.shadowBlur = 0;
+        });
+
+        // 敵
+        enemies.forEach(e => {
+            const aspect = e.img.naturalHeight / (e.img.naturalWidth || 1);
+            const dw = e.baseWidth; 
+            const dh = dw * aspect;
+
+            ctx.save();
+            ctx.translate(e.x, e.y + e.jumpY);
+            
+            if (!e.isSatisfied && e.pattern === 'sin') {
+                ctx.rotate(Math.cos(e.angle) * 0.15);
+            }
+
+            if (e.hitFlash > 0) ctx.filter = 'brightness(1.8) saturate(1.5)';
+            if (e.isSatisfied) ctx.scale(-1, 1);
+
+            if (e.img && e.img.complete) {
+                ctx.drawImage(e.img, -dw/2, -dh/2, dw, dh);
+                
+                // 満足度（HP）ゲージ
+                if (!e.isSatisfied && e.hp > 1) {
+                    const barW = Math.min(dw * 0.8, 150);
+                    const barH = 8;
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    const bx = -barW/2;
+                    const by = dh/2 + 20;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(bx, by, barW, barH, 4) : ctx.rect(bx, by, barW, barH);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fbbf24';
+                    const progress = e.currentSat / e.hp;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(bx, by, barW * progress, barH, 4) : ctx.rect(bx, by, barW * progress, barH);
+                    ctx.fill();
+                }
+            }
+            ctx.restore();
+
+            if (e.isSatisfied) {
+                ctx.save();
+                ctx.translate(e.x, e.y + e.jumpY - dh/2 - 25);
+                const fontSize = e.isWhale ? 55 : 42; 
+                ctx.font = `bold ${fontSize}px serif`;
+                ctx.fillStyle = '#fef08a';
+                ctx.strokeStyle = '#9f1239';
+                ctx.lineWidth = 4;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.strokeText("寿", 0, 0);
+                ctx.fillText("寿", 0, 0);
+                ctx.restore();
+            }
+        });
+
+        // 自機（福熊）
+        if (player.damageFrame % 12 < 6) {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            if (PLAYER_IMG.complete) {
+                const aspect = PLAYER_IMG.naturalHeight / PLAYER_IMG.naturalWidth;
+                const dw = player.width;
+                const dh = dw * aspect;
+                ctx.drawImage(PLAYER_IMG, -dw/2, -dh/2, dw, dh);
+            }
+            ctx.restore();
+        }
+    }
+
+    function endGame() {
+        titleEl.textContent = "福寿満了";
+        messageEl.innerHTML = `最終得点: <span class="text-3xl text-yellow-300 font-black">${score}</span><br>豊かな一年になりますように！`;
+        overlay.style.display = 'flex';
+    }
+</script>
+</body>
+</html>
