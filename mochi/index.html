@@ -20,18 +20,24 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            touch-action: none;
+            min-height: 100vh;
+        }
+        .game-outer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
         .game-container {
+            width: 100%;
             max-width: 600px;
-            margin: 0 auto;
-            height: 100vh;
+            min-height: 85vh; 
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             padding: 10px;
+            position: relative;
         }
         .stage {
             position: relative;
@@ -41,6 +47,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 450px;
         }
         
         .bear-face-system {
@@ -52,24 +59,18 @@
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* わくわく：小刻みな揺れ */
         @keyframes wakuwaku {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
             25% { transform: translate(2px, -2px) rotate(1deg); }
             75% { transform: translate(-2px, -1px) rotate(-1deg); }
         }
-        .anim-wakuwaku {
-            animation: wakuwaku 0.2s infinite;
-        }
+        .anim-wakuwaku { animation: wakuwaku 0.2s infinite; }
 
-        /* 期待：ピョコピョコ跳ねる */
         @keyframes hopping {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        .anim-hopping {
-            animation: hopping 0.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
-        }
+        .anim-hopping { animation: hopping 0.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
         .face-base {
             position: absolute;
@@ -106,19 +107,15 @@
             box-shadow: 0 10px 0 #222;
         }
         .grill-mesh {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             background-image: 
                 linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
             background-size: 20px 20px;
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; top: 0; left: 0;
         }
         .fire-glow {
-            position: absolute;
-            width: 80%;
-            height: 60%;
+            position: absolute; width: 80%; height: 60%;
             background: radial-gradient(circle, rgba(255,69,0,0.4) 0%, transparent 70%);
             animation: flicker 1.5s infinite alternate;
         }
@@ -128,8 +125,7 @@
         }
 
         .mochi {
-            width: 70px;
-            height: 70px;
+            width: 70px; height: 70px;
             background: #fff;
             border-radius: 12px;
             box-shadow: inset -4px -4px 10px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.2);
@@ -140,10 +136,10 @@
             position: absolute;
             z-index: 10;
             transition: transform 0.1s;
+            touch-action: none;
         }
         .mochi-skin {
-            width: 80%;
-            height: 80%;
+            width: 80%; height: 80%;
             border-radius: 10px;
             transition: background 10s linear, transform 2.5s ease-in-out;
         }
@@ -159,6 +155,7 @@
             gap: 15px;
             padding: 10px;
             box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
         }
 
         .dragging {
@@ -183,14 +180,14 @@
         }
 
         .url-input-container {
-            width: 100%;
+            width: 90%;
             max-width: 400px;
             background: rgba(255, 255, 255, 0.5);
             padding: 8px;
             border-radius: 12px;
             display: flex;
             gap: 6px;
-            margin-top: 10px;
+            margin: 10px 0;
             border: 1px solid #d4a373;
         }
         .url-input {
@@ -210,62 +207,62 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        footer {
+            width: 100%;
+            padding: 40px 0;
+            background: transparent;
+        }
     </style>
 </head>
 <body>
 
-<div class="game-container">
-    <div class="text-center mt-2 w-full flex flex-col items-center">
-        <h1 class="text-xl font-bold text-stone-700">シロクマのお餅焼き</h1>
-        <div class="url-input-container">
-            <input type="text" id="urlInput" class="url-input" placeholder="福笑いのURLをここに貼り付け">
-            <button id="loadUrlBtn" class="url-btn">顔を読み込む</button>
+<div class="game-outer">
+    <div class="game-container">
+        <div class="text-center mt-2 w-full flex flex-col items-center">
+            <h1 class="text-xl font-bold text-stone-700">シロクマのお餅焼き</h1>
+            <div class="url-input-container">
+                <input type="text" id="urlInput" class="url-input" placeholder="福笑いのURLをここに貼り付け">
+                <button id="loadUrlBtn" class="url-btn">顔を読み込む</button>
+            </div>
+        </div>
+
+        <div id="message">おいしそう！</div>
+
+        <div class="stage">
+            <div class="bear-face-system" id="bearSystem">
+                <img src="https://6zr.github.io/fuku2026/images/face.png" class="face-base" alt="シロクマ" crossorigin="anonymous">
+                <div id="fuku-parts-container"></div>
+                <svg id="emotion-layer" viewBox="0 0 240 264">
+                    <g id="wrinkle" style="display:none;" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-linecap="round">
+                        <line x1="-4" y1="-8" x2="-4" y2="8" />
+                        <line x1="4" y1="-8" x2="4" y2="8" />
+                    </g>
+                    <g id="joy-stars" style="display:none;" fill="#ffcc00">
+                        <path d="M50 60 l3-3 3 3-3 3z M190 60 l3-3 3 3-3 3z" />
+                    </g>
+                    <g id="surprise" style="display:none;">
+                        <text x="200" y="60" font-family="Arial" font-weight="bold" font-size="40" fill="#ff4500" transform="rotate(15, 200, 60)">!</text>
+                    </g>
+                    <g id="tears" style="display:none;" fill="#4169e1" opacity="0.8">
+                        <rect id="tearL" x="0" y="0" width="6" height="12" rx="3" />
+                        <rect id="tearR" x="0" y="0" width="6" height="12" rx="3" />
+                    </g>
+                </svg>
+            </div>
+            
+            <div class="grill-container" id="grill">
+                <div class="fire-glow"></div>
+                <div class="grill-mesh"></div>
+            </div>
+        </div>
+
+        <div class="tray" id="tray">
+            <!-- Initial mochi will be generated by script -->
         </div>
     </div>
 
-    <div id="message">おいしそう！</div>
-
-    <div class="stage">
-        <div class="bear-face-system" id="bearSystem">
-            <img src="https://6zr.github.io/fuku2026/images/face.png" class="face-base" alt="シロクマ" crossorigin="anonymous">
-            <div id="fuku-parts-container"></div>
-            <svg id="emotion-layer" viewBox="0 0 240 264">
-                <!-- 眉間のしわ -->
-                <g id="wrinkle" style="display:none;" stroke="#4a5568" stroke-width="2.5" fill="none" stroke-linecap="round">
-                    <line x1="-4" y1="-8" x2="-4" y2="8" />
-                    <line x1="4" y1="-8" x2="4" y2="8" />
-                </g>
-                <!-- 喜びの星 -->
-                <g id="joy-stars" style="display:none;" fill="#ffcc00">
-                    <path d="M50 60 l3-3 3 3-3 3z M190 60 l3-3 3 3-3 3z" />
-                </g>
-                <!-- びっくり -->
-                <g id="surprise" style="display:none;">
-                    <text x="200" y="60" font-family="Arial" font-weight="bold" font-size="40" fill="#ff4500" transform="rotate(15, 200, 60)">!</text>
-                </g>
-                <!-- 涙 -->
-                <g id="tears" style="display:none;" fill="#4169e1" opacity="0.8">
-                    <rect id="tearL" x="0" y="0" width="6" height="12" rx="3" />
-                    <rect id="tearR" x="0" y="0" width="6" height="12" rx="3" />
-                </g>
-            </svg>
-        </div>
-        
-        <div class="grill-container" id="grill">
-            <div class="fire-glow"></div>
-            <div class="grill-mesh"></div>
-        </div>
-    </div>
-
-    <div class="tray" id="tray">
-        <div class="mochi" id="m1"></div>
-        <div class="mochi" id="m2"></div>
-        <div class="mochi" id="m3"></div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="mt-16 text-slate-400 text-sm flex flex-col items-center">
-        <!-- Back to Top Link -->
+    <footer class="text-slate-400 text-sm flex flex-col items-center">
         <div class="mb-4">
             <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,11 +271,7 @@
                 トップへもどる
             </a>
         </div>
-        
         <p>© 2026 6zr / fuku2026</p>
-        <div class="mt-4 flex gap-4">
-            <a href="https://github.com/6zr/fuku2026" class="hover:text-slate-600 underline">GitHub Repository</a>
-        </div>
     </footer>
 </div>
 
@@ -305,21 +298,34 @@
     let offsetX = 0;
     let offsetY = 0;
     let grillMochiCount = 0;
-    let mochiStates = new Map(); // 各お餅の状態を管理
+    let mochiStates = new Map();
 
-    function loadFukuwarai(sourceUrl) {
-        let encodedData = null;
+    function extractFaceData(input) {
+        if (!input) return null;
         try {
-            const url = new URL(sourceUrl || window.location.href);
-            encodedData = url.searchParams.get('f');
-        } catch (e) {
-            if (sourceUrl && sourceUrl.includes('f=')) {
-                encodedData = new URLSearchParams(sourceUrl.split('?')[1]).get('f');
-            }
-        }
+            const url = new URL(input);
+            const f = url.searchParams.get('f');
+            if (f) return f;
+        } catch (e) {}
+        const match = input.match(/[?&]f=([^&?#]+)/);
+        if (match && match[1]) return decodeURIComponent(match[1]);
+        if (input.length > 20 && /^[A-Za-z0-9+/=]+$/.test(input)) return input;
+        return null;
+    }
 
-        if (!encodedData && !sourceUrl) {
-            encodedData = DEFAULT_FACE_DATA;
+    function getFileName(id) {
+        const map = {
+            eyeL: 'eye_l.png', eyeR: 'eye_r.png', nose: 'nose.png',
+            handL: 'hand_l.png', handR: 'hand_r.png', antena: 'antena.png',
+            mikan: 'mikan.png', maguro: 'maguro.png'
+        };
+        return map[id] || '';
+    }
+
+    function loadFukuwarai(sourceInput) {
+        let encodedData = extractFaceData(sourceInput);
+        if (!encodedData && !sourceInput) {
+            encodedData = extractFaceData(window.location.href) || DEFAULT_FACE_DATA;
         }
 
         if (encodedData) {
@@ -351,34 +357,32 @@
                 if (!eyesFound.L && eyesFound.R) eyePositions.L = {x: eyePositions.R.x - 80, y: eyePositions.R.y};
                 if (!eyesFound.R && eyesFound.L) eyePositions.R = {x: eyePositions.L.x + 80, y: eyePositions.L.y};
 
-                if (sourceUrl) showEffect("顔を読み込みました！");
+                if (sourceInput) showEffect("顔を読み込みました！");
             } catch(e) { 
-                if (sourceUrl) showEffect("読み込みに失敗しました");
+                if (sourceInput) showEffect("データの形式が正しくありません");
             }
         }
-    }
-
-    loadUrlBtn.addEventListener('click', () => loadFukuwarai(urlInput.value));
-
-    function getFileName(id) {
-        const map = {
-            eyeL: 'eye_l.png', eyeR: 'eye_r.png', nose: 'nose.png',
-            handL: 'hand_l.png', handR: 'hand_r.png', antena: 'antena.png',
-            mikan: 'mikan.png', maguro: 'maguro.png'
-        };
-        return map[id] || '';
     }
 
     function createMochi() {
         const m = document.createElement('div');
         m.className = 'mochi';
-        m.appendChild(document.createElement('div')).className = 'mochi-skin';
+        const skin = document.createElement('div');
+        skin.className = 'mochi-skin';
+        m.appendChild(skin);
         return m;
+    }
+
+    function refillTray() {
+        while (tray.children.length < 3) {
+            tray.appendChild(createMochi());
+        }
     }
 
     function onStart(e) {
         const target = e.target.closest('.mochi');
         if (!target || target.classList.contains('on-grill')) return;
+        
         e.preventDefault();
         const touch = e.type.includes('touch') ? e.touches[0] : e;
         activeMochi = target;
@@ -438,27 +442,21 @@
         updateEmotion('default');
     }
 
-    function refillTray() {
-        if (tray.children.length < 3) tray.appendChild(createMochi());
-    }
-
     function startToasting(mochi) {
         const skin = mochi.querySelector('.mochi-skin');
         let heat = 0;
         const interval = setInterval(() => {
             heat += 1;
-            mochiStates.set(mochi, heat); // 状態を更新
+            mochiStates.set(mochi, heat);
             
             if (heat < 50) {
                 skin.style.background = `rgb(255, ${255 - heat}, ${255 - heat * 2})`;
-                // 焼き始めのわくわく状態を更新
                 updateEmotion('wakuwaku');
             } else if (heat < 100) {
                 const swell = (heat - 50) / 25;
                 mochi.style.transform = `scale(${1 + swell * 0.15})`;
                 skin.style.transform = `scale(${1 + swell * 0.4}) translateY(-${swell * 8}px)`;
                 skin.style.background = `rgb(${255 - (heat-50)}, ${205 - (heat-50)*2}, 150)`;
-                // 期待（ぷっくり）状態を更新
                 updateEmotion('hopping');
             } else if (heat === 100) {
                 updateEmotion('ready');
@@ -495,7 +493,6 @@
     }
 
     function updateEmotion(type) {
-        // 全てのアニメーションクラスを一旦削除
         bearSystem.classList.remove('anim-wakuwaku', 'anim-hopping');
         Object.values(effects).forEach(el => el.style.display = 'none');
         bearSystem.style.transform = "scale(1)";
@@ -503,11 +500,9 @@
         const midX = (eyePositions.L.x + eyePositions.R.x) / 2;
         const midY = (eyePositions.L.y + eyePositions.R.y) / 2;
 
-        // グリル上のお餅の状態を確認して、最も進んでいる状態に合わせる
         if (type === 'wakuwaku' || type === 'hopping') {
             let maxHeat = 0;
             mochiStates.forEach(val => { if(val > maxHeat) maxHeat = val; });
-            
             if (maxHeat > 0 && maxHeat < 50) {
                 bearSystem.classList.add('anim-wakuwaku');
                 return;
@@ -545,9 +540,6 @@
                 effects.tears.style.display = 'block';
                 bearSystem.style.transform = "translateY(5px)";
                 break;
-            default:
-                // 何もない時は静止
-                break;
         }
     }
 
@@ -557,7 +549,7 @@
         setTimeout(() => message.style.display = 'none', 1500);
     }
 
-    document.querySelectorAll('.mochi').forEach(m => m.appendChild(document.createElement('div')).className = 'mochi-skin');
+    loadUrlBtn.addEventListener('click', () => loadFukuwarai(urlInput.value));
     window.addEventListener('mousedown', onStart);
     window.addEventListener('touchstart', onStart, { passive: false });
     window.addEventListener('mousemove', onMove);
@@ -565,6 +557,8 @@
     window.addEventListener('mouseup', onEnd);
     window.addEventListener('touchend', onEnd);
 
+    // Initial setup
+    refillTray();
     loadFukuwarai();
 </script>
 
