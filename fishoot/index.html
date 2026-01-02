@@ -167,8 +167,8 @@
         width: 100 
     };
     
-    // Offset to keep player above the finger/mouse
-    const TOUCH_Y_OFFSET = 60; 
+    // 指の位置から自機を離すためのオフセット（さらに大きく設定）
+    const TOUCH_Y_OFFSET = 120; 
 
     let bullets = [];
     let enemies = [];
@@ -182,24 +182,30 @@
     resize();
 
     function handleInput(e) {
+        // マウスまたはタッチの座標を取得
         const x = e.touches ? e.touches[0].clientX : e.clientX;
         const y = e.touches ? e.touches[0].clientY : e.clientY;
         
-        // Update targets with Y offset so player is above finger
+        // 自機が指に隠れないように、Y座標にオフセットを適用
         player.targetX = x;
         player.targetY = y - TOUCH_Y_OFFSET;
     }
+
+    // イベントリスナーの登録
     window.addEventListener('mousemove', handleInput);
-    window.addEventListener('touchstart', handleInput);
+    window.addEventListener('touchstart', (e) => {
+        handleInput(e);
+    });
     window.addEventListener('touchmove', (e) => { 
         handleInput(e); 
-        e.preventDefault(); 
+        e.preventDefault(); // スクロール等のデフォルト動作を防止
     }, { passive: false });
 
     function initGame() {
         score = 0; hp = 3; bullets = []; enemies = []; frame = 0;
         player.x = 100; player.y = canvas.height / 2;
-        player.targetX = player.x; player.targetY = player.y;
+        player.targetX = player.x; 
+        player.targetY = player.y;
         scoreEl.textContent = "000000";
         hpEl.textContent = `x${hp}`;
         overlay.style.display = 'none';
@@ -234,10 +240,17 @@
         if (!gameActive) return;
         frame++;
 
+        // 自機の滑らかな移動
         player.x += (player.targetX - player.x) * 0.15;
         player.y += (player.targetY - player.y) * 0.15;
+        
+        // 画面外に出ないように制限
+        player.y = Math.max(50, Math.min(canvas.height - 50, player.y));
+        player.x = Math.max(50, Math.min(canvas.width - 50, player.x));
+
         if (player.damageFrame > 0) player.damageFrame--;
 
+        // お餅（弾）の発射
         if (frame % 7 === 0) {
             bullets.push({ x: player.x + 30, y: player.y, r: 6 });
         }
