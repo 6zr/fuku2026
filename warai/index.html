@@ -6,15 +6,14 @@
     <title>シロクマの福笑い</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-VW1EHGZ7WM"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
-		gtag('js', new Date());
-
-		gtag('config', 'G-VW1EHGZ7WM');
-	</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VW1EHGZ7WM"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VW1EHGZ7WM');
+    </script>
 
     <style>
         body {
@@ -56,8 +55,8 @@
         }
         
         .part-box {
-            width: 100px;
-            height: 100px;
+            width: 15.6%; /* キャンバス幅に基づいた相対サイズ (100px / 640px ≒ 15.6%) */
+            aspect-ratio: 1 / 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -70,6 +69,12 @@
             transition: opacity 0.2s;
         }
         
+        /* トレイの中にある時は固定サイズ */
+        #tray .part-box {
+            width: 80px;
+            height: 80px;
+        }
+
         .part {
             max-width: 95%;
             max-height: 95%;
@@ -100,8 +105,8 @@
         
         .handle {
             position: absolute;
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             background: #3b82f6;
             border: 3px solid white;
             pointer-events: auto;
@@ -117,15 +122,15 @@
 
         .rotate-handle {
             border-radius: 50%;
-            top: -70px;
+            top: -60px;
             left: 50%;
-            transform-origin: center center;
+            transform: translateX(-50%);
             cursor: alias;
         }
 
         .scale-btn-container {
             position: absolute;
-            bottom: -70px;
+            bottom: -60px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -147,6 +152,8 @@
             pointer-events: none;
             opacity: 0.8 !important;
             margin: 0 !important;
+            width: 80px !important; /* ドラッグ中はトレイサイズに合わせる */
+            height: 80px !important;
         }
 
         .blind-mode .part { filter: opacity(0.3); }
@@ -168,7 +175,7 @@
             padding: 20px;
             border-radius: 20px;
             margin-top: 30px;
-            display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center;
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
             min-height: 140px;
             touch-action: pan-y;
             border: 2px dashed #a0aec0;
@@ -205,17 +212,17 @@
             
             <div id="controlTemplate" class="controls">
                 <div class="handle rotate-handle" id="rotateHandle">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
                         <polyline points="21 3 21 8 16 8"/>
                     </svg>
                 </div>
                 <div class="scale-btn-container" id="scaleBtnContainer">
                     <div class="handle scale-btn" id="minusBtn" title="小さく">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </div>
                     <div class="handle scale-btn" id="plusBtn" title="大きく">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </div>
                 </div>
             </div>
@@ -262,7 +269,6 @@
 
     <!-- Footer -->
     <footer class="mt-16 text-slate-400 text-sm flex flex-col items-center">
-        <!-- Back to Top Link -->
         <div class="mb-4">
             <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,11 +277,7 @@
                 トップへもどる
             </a>
         </div>
-        
         <p>© 2026 6zr / fuku2026</p>
-        <div class="mt-4 flex gap-4">
-            <a href="https://github.com/6zr/fuku2026" class="hover:text-slate-600 underline">GitHub Repository</a>
-        </div>
     </footer>
 
     <canvas id="exportCanvas" style="display:none;"></canvas>
@@ -297,14 +299,10 @@
         const messageBox = document.getElementById('message-box');
         const partHint = document.getElementById('part-name-hint');
         
-        const BOX_BASE_SIZE = 100;
-        const OFFSET_BASE = BOX_BASE_SIZE / 2;
-
         let isBlindfolded = false;
         let activeBox = null;
         let selectedBox = null;
         let isRotating = false;
-
         let startAngle = 0;
         let baseRotation = 0;
 
@@ -320,6 +318,16 @@
             setTimeout(() => messageBox.style.display = "none", 2500);
         }
 
+        // 相対位置の計算（px -> %）
+        function pxToPercent(px, containerSize) {
+            return (px / containerSize) * 100;
+        }
+
+        // px位置の計算（% -> px）
+        function percentToPx(percent, containerSize) {
+            return (percent / 100) * containerSize;
+        }
+
         function applyTransform(element) {
             if (!element) return;
             const rot = parseFloat(element.dataset.rotation || 0);
@@ -333,7 +341,7 @@
             rotateHandle.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
             scaleBtnContainer.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
             
-            const handleOffset = 70 * invSca;
+            const handleOffset = 60 * invSca;
             rotateHandle.style.top = `-${handleOffset}px`;
             scaleBtnContainer.style.bottom = `-${handleOffset}px`;
         }
@@ -400,8 +408,9 @@
 
         function updateDragPosition(clientX, clientY) {
             if (!activeBox) return;
-            activeBox.style.left = `${clientX - OFFSET_BASE}px`;
-            activeBox.style.top = `${clientY - OFFSET_BASE}px`;
+            // ドラッグ中は固定サイズ(80px)の中央に合わせる
+            activeBox.style.left = `${clientX - 40}px`;
+            activeBox.style.top = `${clientY - 40}px`;
         }
 
         function onMove(e) {
@@ -442,27 +451,51 @@
             if (isInside) {
                 activeBox.classList.add('is-on-canvas');
                 
-                const finalX = (centerX - canvasRect.left) - OFFSET_BASE;
-                const finalY = (centerY - canvasRect.top) - OFFSET_BASE;
+                // 相対位置(%)で座標を決定する
+                const relX = pxToPercent(centerX - canvasRect.left, canvasRect.width);
+                const relY = pxToPercent(centerY - canvasRect.top, canvasRect.height);
                 
-                activeBox.style.left = `${finalX}px`;
-                activeBox.style.top = `${finalY}px`;
+                // CSSでは中心を基準にするため translate(-50%, -50%) を考慮した配置
+                activeBox.style.left = `${relX}%`;
+                activeBox.style.top = `${relY}%`;
+                activeBox.style.margin = "0";
+                activeBox.style.transform = `translate(-50%, -50%) rotate(${activeBox.dataset.rotation}deg) scale(${activeBox.dataset.scale})`;
+                
+                // applyTransformを上書きするための調整（is-on-canvas時は特別処理）
+                activeBox.style.position = "absolute";
                 
                 canvas.appendChild(activeBox);
                 activeBox.appendChild(controlTemplate);
-                applyTransform(activeBox);
             } else {
                 activeBox.classList.remove('is-on-canvas');
                 activeBox.style.left = ''; activeBox.style.top = '';
+                activeBox.style.transform = '';
                 activeBox.dataset.rotation = 0;
                 activeBox.dataset.scale = 1;
-                applyTransform(activeBox);
                 const state = initialStates.find(s => s.id === activeBox.dataset.id);
                 state.parent.appendChild(activeBox);
                 deselectAll();
             }
 
             activeBox = null;
+        }
+
+        // applyTransformを再定義（%配置対応）
+        function applyTransform(element) {
+            if (!element) return;
+            const rot = parseFloat(element.dataset.rotation || 0);
+            const sca = parseFloat(element.dataset.scale || 1);
+            
+            if (element.classList.contains('is-on-canvas')) {
+                element.style.transform = `translate(-50%, -50%) rotate(${rot}deg) scale(${sca})`;
+            } else {
+                element.style.transform = `rotate(${rot}deg) scale(${sca})`;
+            }
+            
+            const invSca = 1 / sca;
+            const invRot = -rot;
+            rotateHandle.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
+            scaleBtnContainer.style.transform = `translateX(-50%) scale(${invSca}) rotate(${invRot}deg)`;
         }
 
         [tray, canvas].forEach(el => {
@@ -479,20 +512,23 @@
             canvas.querySelectorAll('.part-box').forEach(box => {
                 state.push({
                     id: box.dataset.id,
-                    x: parseInt(box.style.left),
-                    y: parseInt(box.style.top),
+                    x: parseFloat(box.style.left), // %値が入っている
+                    y: parseFloat(box.style.top),  // %値が入っている
                     r: Math.round(parseFloat(box.dataset.rotation || 0)),
                     s: parseFloat(box.dataset.scale || 1)
                 });
             });
             const url = new URL(window.location.href);
             if (state.length > 0) {
+                // データをBase64化。数値の精度を丸めてURLを短くする
                 url.searchParams.set('f', btoa(JSON.stringify(state)));
             } else {
                 url.searchParams.delete('f');
             }
+            
+            const fullUrl = url.href;
             const tempInput = document.createElement('input');
-            tempInput.value = url.href;
+            tempInput.value = fullUrl;
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
@@ -511,8 +547,8 @@
                         if (original) {
                             const box = original.element;
                             box.classList.add('is-on-canvas');
-                            box.style.left = `${p.x}px`;
-                            box.style.top = `${p.y}px`;
+                            box.style.left = `${p.x}%`;
+                            box.style.top = `${p.y}%`;
                             box.dataset.rotation = p.r;
                             box.dataset.scale = p.s;
                             canvas.appendChild(box);
@@ -536,10 +572,9 @@
         resetBtn.addEventListener('click', () => {
             initialStates.forEach(state => {
                 state.element.classList.remove('is-on-canvas', 'blind-mode');
-                state.element.style.top = ''; state.element.style.left = '';
+                state.element.style = '';
                 state.element.dataset.rotation = 0;
                 state.element.dataset.scale = 1;
-                applyTransform(state.element);
                 state.parent.appendChild(state.element);
             });
             isBlindfolded = false;
@@ -559,47 +594,47 @@
             const exportCanvas = document.getElementById('exportCanvas');
             const ctx = exportCanvas.getContext('2d');
             
-            const baseWidth = canvas.clientWidth;
-            const baseHeight = baseWidth * 1.1; 
-            
-            const scaleFactor = 2; 
-            exportCanvas.width = baseWidth * scaleFactor;
-            exportCanvas.height = baseHeight * scaleFactor;
-            
-            ctx.scale(scaleFactor, scaleFactor);
+            // 出力解像度を固定（1000px幅基準）
+            const exportWidth = 1000;
+            const exportHeight = 1100;
+            exportCanvas.width = exportWidth;
+            exportCanvas.height = exportHeight;
             
             ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, baseWidth, baseHeight);
+            ctx.fillRect(0, 0, exportWidth, exportHeight);
             
             const fImg = document.getElementById('faceBase');
-            const faceWidth = baseWidth * 0.85;
+            const faceWidth = exportWidth * 0.85;
             const faceHeight = faceWidth * (fImg.naturalHeight / fImg.naturalWidth);
-            const faceX = (baseWidth - faceWidth) / 2;
-            const faceY = (baseHeight - faceHeight) / 2;
+            const faceX = (exportWidth - faceWidth) / 2;
+            const faceY = (exportHeight - faceHeight) / 2;
             ctx.drawImage(fImg, faceX, faceY, faceWidth, faceHeight);
 
             canvas.querySelectorAll('.part-box').forEach(box => {
                 const img = box.querySelector('img');
-                const posX = parseFloat(box.style.left);
-                const posY = parseFloat(box.style.top);
+                // %座標からpx座標（1000px基準）に変換
+                const relX = parseFloat(box.style.left);
+                const relY = parseFloat(box.style.top);
+                const posX = (relX / 100) * exportWidth;
+                const posY = (relY / 100) * exportHeight;
+
                 const rot = parseFloat(box.dataset.rotation || 0);
                 const sca = parseFloat(box.dataset.scale || 1);
                 
-                const boxSize = BOX_BASE_SIZE;
+                // パーツ自体の基本サイズも相対的に計算 (キャンバス幅の15.6%)
+                const basePartSize = exportWidth * 0.156;
                 const imgRatio = img.naturalWidth / img.naturalHeight;
                 let drawW, drawH;
                 
-                const maxInBox = boxSize * 0.95;
+                const maxInBox = basePartSize * 0.95;
                 if (imgRatio > 1) {
-                    drawW = maxInBox;
-                    drawH = maxInBox / imgRatio;
+                    drawW = maxInBox; drawH = maxInBox / imgRatio;
                 } else {
-                    drawH = maxInBox;
-                    drawW = maxInBox * imgRatio;
+                    drawH = maxInBox; drawW = maxInBox * imgRatio;
                 }
 
                 ctx.save();
-                ctx.translate(posX + boxSize / 2, posY + boxSize / 2);
+                ctx.translate(posX, posY);
                 ctx.rotate(rot * Math.PI / 180);
                 ctx.scale(sca, sca);
                 ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
@@ -608,7 +643,7 @@
             
             try {
                 const link = document.createElement('a');
-                link.download = 'fukuwarai_shirokuma.png';
+                link.download = `fukuwarai_${new Date().getTime()}.png`;
                 link.href = exportCanvas.toDataURL('image/png');
                 link.click();
             } catch (err) {
