@@ -29,13 +29,13 @@
         .instruction-box {
             background: rgba(220, 38, 38, 0.9); padding: 12px 30px;
             border-radius: 4px; border: 3px solid #fff;
-            text-align: center; font-size: 1.2rem; font-weight: bold;
+            text-align: center; font-size: 1.1rem; font-weight: bold;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
             transform: skewX(-10deg);
         }
         .stats-container { position: absolute; top: 40px; left: 20px; text-align: left; }
-        .score-label { font-size: 0.9rem; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-        .score-value { font-size: 3rem; font-weight: 900; font-style: italic; }
+        .score-label { font-size: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        .score-value { font-size: 2.2rem; font-weight: 900; font-style: italic; }
         
         #progress-container {
             width: 80%; max-width: 400px; height: 20px; background: #333;
@@ -49,7 +49,7 @@
             box-shadow: 0 0 20px #fbbf24;
         }
         #time-display {
-            position: absolute; top: 120px; font-size: 5rem;
+            position: absolute; top: 120px; font-size: 4rem;
             font-weight: 900; color: #fff; opacity: 0; font-style: italic;
         }
         #result-screen {
@@ -58,14 +58,16 @@
             justify-content: center; pointer-events: auto; z-index: 100;
         }
         .rank-text {
-            font-size: 8rem; font-weight: 900; margin: -10px 0;
+            font-size: 18vw; max-font-size: 8rem; font-weight: 900; margin: -10px 0;
             color: #fff; text-shadow: 5px 5px 0 #ef4444; transform: skewX(-10deg);
         }
+		@media (min-width: 600px) { .rank-text { font-size: 8rem; } }
+
         .flash { position: absolute; inset: 0; background: white; pointer-events: none; opacity: 0; z-index: 50; }
         
         #aa-prompt {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 5rem; color: #fbbf24; font-weight: 900; font-style: italic;
+            font-size: 3.5rem; color: #fbbf24; font-weight: 900; font-style: italic;
             text-shadow: 0 0 15px #000, 0 0 30px #fbbf24; display: none; z-index: 60;
             animation: pulse 0.1s infinite alternate;
             background: rgba(0,0,0,0.8); padding: 20px 40px; border: 8px solid #fbbf24;
@@ -96,8 +98,8 @@
 </div>
 
 <div id="result-screen">
-    <div class="score-label" id="final-score-label">TOTAL RESPECT</div>
-    <div id="final-score" class="score-value" style="font-size: 4rem; margin-bottom: 10px;">0</div>
+    <div class="score-label" id="final-score-label" style="font-size: 1rem;">TOTAL RESPECT</div>
+    <div id="final-score" class="score-value" style="font-size: 3.5rem; margin-bottom: 10px;">0</div>
     <div id="rank-display" class="rank-text">U C ME</div>
     <div id="rank-desc" class="mb-8 text-white font-bold text-center px-4 italic text-xl">"HUSTLE, LOYALTY, RESPECT"</div>
     <button id="retry-btn" class="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 text-2xl rounded-none transform skew-x-[-15deg] transition-all active:scale-95 border-4 border-white">REMATCH</button>
