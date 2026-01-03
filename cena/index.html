@@ -21,26 +21,34 @@
             color: white; user-select: none; -webkit-user-select: none;
         }
         canvas { display: block; width: 100vw; height: 100vh; }
+        
+        /* UI共通 */
         .ui-overlay {
             position: absolute; inset: 0; pointer-events: none;
             display: flex; flex-direction: column; align-items: center;
-            justify-content: space-between; padding: 40px 20px; z-index: 10;
+            justify-content: space-between; padding: 20px; z-index: 10;
         }
+
+        /* 命令ボックス */
         .instruction-box {
-            background: rgba(220, 38, 38, 0.9); padding: 12px 30px;
+            background: rgba(220, 38, 38, 0.9); padding: 10px 20px;
             border-radius: 4px; border: 3px solid #fff;
             text-align: center; font-size: 1.1rem; font-weight: bold;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
             transform: skewX(-10deg);
+            margin-top: 20px;
         }
-        .stats-container { position: absolute; top: 40px; left: 20px; text-align: left; }
+
+        /* スコア表示（左上） */
+        .stats-container { position: absolute; top: 20px; left: 20px; text-align: left; }
         .score-label { font-size: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-        .score-value { font-size: 2.2rem; font-weight: 900; font-style: italic; }
-        
+        .score-value { font-size: 2.2rem; font-weight: 900; font-style: italic; line-height: 1; }
+
+        /* プログレスバー */
         #progress-container {
-            width: 80%; max-width: 400px; height: 20px; background: #333;
+            width: 80%; max-width: 300px; height: 16px; background: #333;
             border-radius: 0; overflow: hidden; opacity: 0;
-            transition: opacity 0.5s; margin-bottom: 20px; border: 3px solid #fff;
+            transition: opacity 0.5s; margin-bottom: 20px; border: 2px solid #fff;
             transform: skewX(-15deg);
         }
         #progress-bar {
@@ -48,35 +56,44 @@
             background: linear-gradient(90deg, #fbbf24, #fff);
             box-shadow: 0 0 20px #fbbf24;
         }
+
+        /* タイマー表示 */
         #time-display {
             position: absolute; top: 80px; font-size: 4rem;
             font-weight: 900; color: #fff; opacity: 0; font-style: italic;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
+
+        /* 結果画面 */
         #result-screen {
             position: absolute; inset: 0; background: radial-gradient(circle, #1e40af, #000);
             display: none; flex-direction: column; align-items: center;
             justify-content: center; pointer-events: auto; z-index: 100;
+            padding: 20px; text-align: center;
+            overflow-y: auto;
         }
         .rank-text {
-            font-size: 18vw; max-font-size: 8rem; font-weight: 900; margin: -10px 0;
-            color: #fff; text-shadow: 5px 5px 0 #ef4444; transform: skewX(-10deg);
+            font-size: 18vw; max-font-size: 8rem; font-weight: 900; margin: 10px 0;
+            color: #fff; text-shadow: 4px 4px 0 #ef4444; transform: skewX(-10deg);
+            line-height: 1;
         }
-		@media (min-width: 600px) { .rank-text { font-size: 8rem; } }
+        @media (min-width: 600px) { .rank-text { font-size: 8rem; } }
 
-        .flash { position: absolute; inset: 0; background: white; pointer-events: none; opacity: 0; z-index: 50; }
-        
+        /* 特殊プロンプト */
         #aa-prompt {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 3.5rem; color: #fbbf24; font-weight: 900; font-style: italic;
             text-shadow: 0 0 15px #000, 0 0 30px #fbbf24; display: none; z-index: 60;
             animation: pulse 0.1s infinite alternate;
-            background: rgba(0,0,0,0.8); padding: 20px 40px; border: 8px solid #fbbf24;
-            pointer-events: none;
+            background: rgba(0,0,0,0.8); padding: 15px 30px; border: 6px solid #fbbf24;
+            pointer-events: none; width: 80%; text-align: center;
         }
         @keyframes pulse {
-            from { transform: translate(-50%, -50%) scale(1.1); }
-            to { transform: translate(-50%, -50%) scale(1.2); }
+            from { transform: translate(-50%, -50%) scale(1.0); }
+            to { transform: translate(-50%, -50%) scale(1.1); }
         }
+
+        .flash { position: absolute; inset: 0; background: white; pointer-events: none; opacity: 0; z-index: 50; }
     </style>
 </head>
 <body>
@@ -89,7 +106,7 @@
         <div class="score-label" id="score-label-text">RESPECT</div>
         <div id="score-display" class="score-value">0</div>
     </div>
-    <div id="time-display">5.0</div>
+    <div id="time-display">0.0</div>
     <div id="instruction" class="instruction-box">TAP TO START</div>
     
     <div id="progress-container">
@@ -99,15 +116,15 @@
 
 <div id="result-screen">
     <div class="score-label" id="final-score-label" style="font-size: 1rem;">TOTAL RESPECT</div>
-    <div id="final-score" class="score-value" style="font-size: 3.5rem; margin-bottom: 10px;">0</div>
+    <div id="final-score" class="score-value" style="font-size: 3.5rem; margin-bottom: 5px;">0</div>
     <div id="rank-display" class="rank-text">U C ME</div>
-    <div id="rank-desc" class="mb-8 text-white font-bold text-center px-4 italic text-xl">"HUSTLE, LOYALTY, RESPECT"</div>
-    <button id="retry-btn" class="bg-red-600 hover:bg-red-500 text-white font-black py-4 px-16 text-2xl rounded-none transform skew-x-[-15deg] transition-all active:scale-95 border-4 border-white">REMATCH</button>
+    <div id="rank-desc" class="mb-6 text-white font-bold text-center px-4 italic text-lg leading-tight">"HUSTLE, LOYALTY, RESPECT"</div>
+    
+    <button id="retry-btn" class="bg-red-600 hover:bg-red-500 text-white font-black py-3 px-12 text-xl rounded-none transform skew-x-[-15deg] transition-all active:scale-95 border-4 border-white mb-6">REMATCH</button>
 
-
-    <footer class="text-slate-400 text-sm flex flex-col items-center py-10">
+    <footer class="text-slate-400 text-xs flex flex-col items-center pt-4 pb-6">
         <div class="mb-4">
-            <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+            <a href="../" class="flex items-center hover:text-slate-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100 text-slate-900 font-bold">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
@@ -121,9 +138,6 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-    /**
-     * Game Config
-     */
     const GAME_CONFIG = {
         assets: {
             face: 'https://6zr.github.io/fuku2026/images/face.png',
@@ -155,19 +169,23 @@
         balance: {
             phase2TimeLimit: 3.0,
             aaWindowFrames: 20,
+            phase3MaxBonus: 8000,
+            phase3StopPenalty: 30,
+            phase3HoldPenalty: 80,
             scores: {
-                great: 2000,
-                good: 800,
-                miss: -100,
-                hustle: 100,
-                fks: 5000,
-                aaSuccess: 15000
+                great: 3500,
+                good: 1200,
+                miss: -500,
+                hustle: 150,
+                fks: 0,
+                aaSuccess: 20000
             }
         },
         ranks: [
-            { threshold: 25000, name: "G.O.A.T." },
-            { threshold: 15000, name: "CHAMP" },
-            { threshold: 0,     name: "SOLDIER" }
+            { threshold: 31000, name: "G.O.A.T." },
+            { threshold: 25000, name: "CHAMP" },
+            { threshold: 15000, name: "SOLDIER" },
+            { threshold: 0,     name: "ROOKIE" }
         ]
     };
 
@@ -185,7 +203,6 @@
     const retryBtn = document.getElementById('retry-btn');
     const aaPrompt = document.getElementById('aa-prompt');
 
-    // UI Labels
     document.getElementById('score-label-text').innerText = GAME_CONFIG.text.scoreLabel;
     document.getElementById('final-score-label').innerText = "TOTAL " + GAME_CONFIG.text.scoreLabel;
     document.getElementById('rank-desc').innerText = GAME_CONFIG.text.rankDesc;
@@ -193,7 +210,6 @@
     aaPrompt.innerText = GAME_CONFIG.text.aaPrompt;
     retryBtn.innerText = GAME_CONFIG.text.retryBtn;
 
-    // Asset Loading
     const assets = {};
     Object.keys(GAME_CONFIG.assets).forEach(key => {
         assets[key] = new Image();
@@ -214,6 +230,7 @@
     let slamStage = 0, slamProgress = 0, aaTriggerActive = false, aaWindowTimer = 0;
     let hitStop = 0;
     let ripple = { x: 0, y: 0, size: 0, active: false };
+    let p3Bonus = GAME_CONFIG.balance.phase3MaxBonus;
 
     function resize() {
         width = window.innerWidth;
@@ -247,9 +264,6 @@
         if (scoreBonus !== 0) updateScore(scoreBonus);
     }
 
-    /**
-     * 画像の縦横比を維持して描画する関数
-     */
     function drawAsset(img, x, y, targetW, targetH, rotation = 0, scale = 1, alpha = 1) {
         if (!img.complete || img.naturalWidth === 0) {
             ctx.save();
@@ -262,12 +276,9 @@
             ctx.restore();
             return;
         }
-
-        // アスペクト比を維持するための計算
         const aspectRatio = img.naturalHeight / img.naturalWidth;
         const drawW = targetW;
-        const drawH = targetW * aspectRatio; // 幅を基準に高さを決める
-
+        const drawH = targetW * aspectRatio;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.translate(x, y);
@@ -335,7 +346,7 @@
     function onUp() {
         if (phase === 3 && !transitionLock) {
             if (hasReachedFinal) {
-                showFeedback(GAME_CONFIG.text.feedback.fks, GAME_CONFIG.balance.scores.fks);
+                showFeedback(GAME_CONFIG.text.feedback.fks, Math.max(0, p3Bonus));
                 transitionLock = true; phase = 4; slamStage = 0; slamProgress = 0;
                 triggerFlash(0.5); hitStop = 5;
             }
@@ -346,7 +357,6 @@
     function update() {
         if (hitStop > 0) { hitStop--; requestAnimationFrame(update); return; }
         ctx.clearRect(0, 0, width, height);
-        
         const sX = (Math.random() - 0.5) * shake;
         const sY = (Math.random() - 0.5) * shake;
         if (shake > 0) shake *= 0.92;
@@ -356,13 +366,15 @@
         bgGrad.addColorStop(1, '#000');
         ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, width, height);
 
+        // const assetBaseSize = Math.min(width, height) * 0.5;
+        const assetBaseSize = (height <= width) ? height * 0.25 : width * 0.5;
+
         switch(phase) {
             case 0:
             case 1:
                 if (phase === 1 && waitTimer === 0) timer += 0.025;
-                drawAsset(assets.face, charX + sX, charY + sY, 200, 260);
-                drawAsset(assets.handL, charX + sX + 60, charY + sY - 60, 130, 130, -0.2, 1.1);
-
+                drawAsset(assets.face, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3);
+                drawAsset(assets.handL, charX + sX + 60, charY + sY - 60, assetBaseSize * 0.6, assetBaseSize * 0.6, -0.2, 1.1);
                 if (phase === 1) {
                     const p = (timer % 1.8) / 1.8;
                     const targetY = height * 0.4;
@@ -371,7 +383,6 @@
                     const ringR = 50 + (250 - 50) * (1 - p);
                     ctx.strokeStyle = (p > 0.8) ? "#fbbf24" : "rgba(255,255,255,0.5)";
                     ctx.beginPath(); ctx.arc(width/2, targetY, ringR, 0, Math.PI*2); ctx.stroke();
-                    
                     if (waitTimer > 0) {
                         if (waitTimer === 1) {
                             phase = 2; timer = 0; limitTimer = GAME_CONFIG.balance.phase2TimeLimit;
@@ -382,7 +393,6 @@
                     }
                 }
                 break;
-                
             case 2:
                 if (waitTimer === 0 && !transitionLock) {
                     limitTimer -= 1/60;
@@ -391,11 +401,9 @@
                 timeDisplay.innerText = Math.max(0, limitTimer).toFixed(1);
                 progressBar.style.width = (Math.min(1, timer) * 100) + "%";
                 handX += handSpeed; handSpeed *= 0.82; handX *= 0.8;
-                
                 const alpha = Math.min(1, timer * 2.0);
-                drawAsset(assets.face, charX + sX, charY + sY, 200, 260, 0, 1, alpha);
-                drawAsset(assets.handR, charX + sX + handX, charY + sY - 40, 140, 140, handSpeed * 0.02, 1.2, alpha);
-
+                drawAsset(assets.face, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3, 0, 1, alpha);
+                drawAsset(assets.handR, charX + sX + handX, charY + sY - 40, assetBaseSize * 0.7, assetBaseSize * 0.7, handSpeed * 0.02, 1.2, alpha);
                 if ((timer >= 1.0 || limitTimer <= 0) && !transitionLock) {
                     transitionLock = true; waitTimer = 60;
                     instruction.innerText = GAME_CONFIG.text.phase3Instruction;
@@ -407,23 +415,33 @@
                         phase = 3; charX = width / 2; transitionLock = false;
                         charDirection = -1; hasReachedLeft = false; hasReachedFinal = false;
                         instruction.innerText = GAME_CONFIG.text.phase3Action;
+                        p3Bonus = GAME_CONFIG.balance.phase3MaxBonus;
                     }
                     waitTimer--;
                 }
                 break;
-
             case 3:
                 if (!transitionLock) {
                     const centerX = width / 2;
-                    if (isPressing && !hasReachedFinal) {
-                        charX += 18 * charDirection;
-                        if (charX <= 80) { charX = 80; charDirection = 1; hasReachedLeft = true; }
-                        if (hasReachedLeft && charX >= centerX) { charX = centerX; hasReachedFinal = true; }
+                    if (isPressing) {
+                        if (!hasReachedFinal) {
+                            charX += 18 * charDirection;
+                            if (charX <= 80) { charX = 80; charDirection = 1; hasReachedLeft = true; }
+                            if (hasReachedLeft && charX >= centerX) { charX = centerX; hasReachedFinal = true; }
+                        } else {
+                            p3Bonus -= GAME_CONFIG.balance.phase3HoldPenalty;
+                            shake = Math.max(shake, 3);
+                        }
+                    } else {
+                        if (!hasReachedFinal) p3Bonus -= GAME_CONFIG.balance.phase3StopPenalty;
                     }
                 }
-                drawAsset(assets.face, charX + sX, charY + sY, 200, 260);
+                drawAsset(assets.face, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3);
+                if (p3Bonus < GAME_CONFIG.balance.phase3MaxBonus * 0.8) {
+                    ctx.fillStyle = "#ef4444"; ctx.font = "italic 400 24px Impact"; ctx.textAlign = "center";
+                    ctx.fillText(`BONUS: ${Math.floor(Math.max(0, p3Bonus))}`, width/2, height * 0.15);
+                }
                 break;
-
             case 4:
                 if (slamStage === 0) {
                     slamProgress += 0.04; charY -= 6;
@@ -448,9 +466,8 @@
                         }
                     }
                 }
-                drawAsset(assets.face, charX + sX, charY + sY, 200, 260, charRotation, charScale);
+                drawAsset(assets.face, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3, charRotation, charScale);
                 break;
-
             case 5:
                 if (slamStage === 0) {
                     slamProgress += 0.05; charY -= 20;
@@ -465,13 +482,13 @@
                     }
                 } else {
                     charRotation = Math.PI * 1.0; charScale = 3.5;
-                    ctx.fillStyle = "#fbbf24"; ctx.font = "italic 900 85px Impact"; ctx.textAlign = "center";
+                    ctx.fillStyle = "#fbbf24"; ctx.font = `italic 900 ${Math.min(width * 0.15, 80)}px Impact`; ctx.textAlign = "center";
                     ctx.shadowBlur = 40; ctx.shadowColor = "white";
                     ctx.fillText(GAME_CONFIG.text.aaFinish1, width/2, height/2 - 50);
                     ctx.fillText(GAME_CONFIG.text.aaFinish2, width/2, height/2 + 50);
                     ctx.shadowBlur = 0;
                 }
-                drawAsset(assets.bodyFull, charX + sX, charY + sY, 200, 260, charRotation, charScale);
+                drawAsset(assets.bodyFull, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3, charRotation, charScale);
                 break;
         }
 
@@ -485,11 +502,10 @@
 
         if (feedbackTimer > 0) {
             ctx.fillStyle = `rgba(255, 255, 255, ${feedbackTimer/60})`;
-            ctx.font = "italic 900 75px Impact"; ctx.textAlign = "center";
+            ctx.font = `italic 900 ${Math.min(width * 0.18, 75)}px Impact`; ctx.textAlign = "center";
             ctx.fillText(feedbackText, width/2, height * 0.25);
             feedbackTimer--;
         }
-
         requestAnimationFrame(update);
     }
 
@@ -515,7 +531,6 @@
         retryBtn.addEventListener('click', () => location.reload());
         requestAnimationFrame(update);
     }
-
     init();
 </script>
 </body>
