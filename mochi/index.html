@@ -139,6 +139,7 @@
             width: 37.5px; height: 37.5px;
             display: flex; align-items: center; justify-content: center;
             pointer-events: none;
+            transform-origin: center center;
         }
         .fuku-part-img { max-width: 95%; max-height: 95%; object-fit: contain; }
 
@@ -335,7 +336,7 @@
     const resultBestScoreEl = document.getElementById('result-best-score');
     const resultCommentEl = document.getElementById('result-comment');
 
-    const DEFAULT_FACE_DATA = "W3siaWQiOiJleWVMIiwieCI6MTU4LCJ5IjoyMzMsInIiOjAsInMiOjEuMn0seyJpZCI6ImV5ZVIiLCJ4IjozMjcsInkiOjI2OCwiciI6MCwicyI6MS4yfSx7ImlkIjoibm9zZSIsIngiOjIyNCwieSI6MzUwLCJyIjowLCJzIjoxLjN9XQ==";
+    const DEFAULT_FACE_DATA = "W3siaWQiOiJleWVMIiwieCI6MzUuODg3MSwieSI6NDIuMzc1NCwiciI6NSwicyI6MS42fSx7ImlkIjoibm9zZSIsIngiOjQ1LjA4MDYsInkiOjU4LjM1NzgsInIiOjAsInMiOjEuNn0seyJpZCI6ImV5ZVIiLCJ4Ijo2Mi42NjEzLCJ5Ijo0Ni42Mjc2LCJyIjowLCJzIjoxLjV9XQ==";
 
     const effects = {
         wrinkle: document.getElementById('wrinkle'),
@@ -377,17 +378,25 @@
             try {
                 const state = JSON.parse(atob(encodedData));
                 fukuContainer.innerHTML = '';
-                const scaleFactor = 240 / 640;
+                
+                // パーセントで計算するため固定のscaleFactorは不要
                 state.forEach(p => {
                     const div = document.createElement('div');
                     div.className = 'fuku-part-box';
-                    div.style.left = (p.x * scaleFactor) + 'px';
-                    div.style.top = (p.y * scaleFactor) + 'px';
-                    const cpX = (p.x + 50) * scaleFactor;
-                    const cpY = (p.y + 50) * scaleFactor;
+                    
+                    // 座標をパーセントで適用
+                    div.style.left = p.x + '%';
+                    div.style.top = p.y + '%';
+                    div.style.transform = `translate(-50%, -50%) rotate(${p.r}deg) scale(${p.s})`;
+
+                    // エフェクト用の中心座標計算（%をpxに変換して保持）
+                    const rect = fukuContainer.getBoundingClientRect();
+                    const cpX = (p.x / 100) * rect.width;
+                    const cpY = (p.y / 100) * rect.height;
+
                     if (p.id === 'eyeL') eyePositions.L = {x: cpX, y: cpY};
                     if (p.id === 'eyeR') eyePositions.R = {x: cpX, y: cpY};
-                    div.style.transform = `rotate(${p.r}deg) scale(${p.s})`;
+                    
                     const img = document.createElement('img');
                     img.className = 'fuku-part-img';
                     img.src = `https://6zr.github.io/fuku2026/images/${getFileName(p.id)}`;
@@ -510,10 +519,8 @@
             else if (heat > 120 && heat <= 160) { score = 80 - (heat - 120); showEffect(score + "点：もうちょっとだねワン"); updateEmotion('bad'); }
             else { score = -20; showEffect("にがいよ〜ワン（涙）"); updateEmotion('fail'); }
             
-            // スコアを記録
             currentSessionScores.push(score);
             
-            // セッション内最高記録を更新
             if (score > currentMaxScore) {
                 currentMaxScore = score;
                 bestScoreEl.textContent = currentMaxScore;
@@ -564,14 +571,9 @@
         setTimeout(() => { if(message.textContent === txt) message.style.display = 'none'; }, 1800);
     }
 
-    // --- 判定完了ボタンの処理 ---
     finishBtn.onclick = () => {
         if (currentSessionScores.length === 0) return;
-        
-        // 平均点を計算
         const avg = Math.round(currentSessionScores.reduce((a, b) => a + b, 0) / currentSessionScores.length);
-        
-        // リザルト画面に数値をセット
         resultAvgScoreEl.textContent = avg + "点";
         resultBestScoreEl.textContent = currentMaxScore + "点";
 
@@ -588,18 +590,13 @@
 
     window.closeResult = () => {
         resultOverlay.style.display = 'none';
-        
-        // 「もう一度焼く」で全ての記録を完全にリセット
         currentSessionScores = [];
         currentMaxScore = 0;
         totalEaten = 0;
-        
-        // 表示のリセット
         bestScoreEl.textContent = "0";
         mochiCountEl.textContent = "0";
         finishBtn.style.opacity = "0";
         finishBtn.style.pointerEvents = "none";
-        
         updateEmotion('default');
     };
 
