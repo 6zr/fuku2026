@@ -138,6 +138,92 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
+    const AudioEngine = {
+        ctx: null,
+        mainGain: null,
+        loopId: null,
+        currentPhase: -1,
+        
+        async init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.mainGain = this.ctx.createGain();
+                this.mainGain.gain.value = 0.2;
+                this.mainGain.connect(this.ctx.destination);
+            }
+            if (this.ctx.state === 'suspended') {
+                await this.ctx.resume();
+            }
+        },
+
+        playNote(freq, start, duration, type = 'sawtooth', volume = 0.5) {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, start);
+            
+            g.gain.setValueAtTime(0, start);
+            g.gain.linearRampToValueAtTime(volume, start + 0.05);
+            g.gain.exponentialRampToValueAtTime(0.01, start + duration);
+            
+            osc.connect(g);
+            g.connect(this.mainGain);
+            
+            osc.start(start);
+            osc.stop(start + duration);
+        },
+
+        // Phase 0: デーーンデーーンデーーンデーン
+        playIntro() {
+            if (this.currentPhase === 0) return;
+            this.init();
+            this.currentPhase = 0;
+            
+            const now = this.ctx.currentTime;
+            // 低音の D2 (73.42Hz)
+            const notes = [196.00, 174.61, 155.56, 146.83, 196.00, 174.61, 155.56, 146.83,];
+            notes.forEach((f, i) => {
+                this.playNote(f, now + (i * 1.2), 1.1, 'sawtooth', 1.2);
+            });
+        },
+
+        // Phase 1+: チャッチャラッチャー
+        startMainLoop() {
+            this.init();
+            if (this.currentPhase === 1) return;
+            this.currentPhase = 1;
+            
+            if (this.loopId) clearInterval(this.loopId);
+            
+            const playMotive = () => {
+                const now = this.ctx.currentTime;
+                // G4, F4, G4, A4, G4
+                const motive = [
+					{f: 392.00, d: 0.20, t: 0.0},  // チャッ (Bb4)
+					{f: 440.00, d: 0.10, t: 0.4},  // チャ   (A4)
+					{f: 349.23, d: 0.10, t: 0.6},  // ラッ   (F4)
+					{f: 392.00, d: 0.40, t: 1.0},  // チャ〜 (G4) ← 低く着地
+
+					{f: 466.16, d: 0.20, t: 2.0},  // チャッ (G4)
+					{f: 440.00, d: 0.10, t: 2.4},  // チャ   (A4)
+					{f: 349.23, d: 0.10, t: 2.6},  // ラッ   (F4)
+					{f: 392.00, d: 0.40, t: 3.0},  // チャ〜 (G4) ← 低く着地
+                ];
+                motive.forEach(n => this.playNote(n.f, now + n.t, n.d, 'square', 1.4));
+            };
+
+            playMotive();
+            this.loopId = setInterval(playMotive, 4000);
+        },
+
+        stop() {
+            if (this.loopId) clearInterval(this.loopId);
+            if (this.ctx) this.ctx.close();
+            this.ctx = null;
+            this.currentPhase = -1;
+        }
+    };
     const GAME_CONFIG = {
         assets: {
             face: 'https://6zr.github.io/fuku2026/images/face.png',
@@ -288,7 +374,7 @@
         ctx.restore();
     }
 
-    function onDown(e) {
+    async function onDown(e) {
         if (waitTimer > 0 || resultScreen.style.display === 'flex') return;
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -308,6 +394,10 @@
         touchStartX = clientX;
 
         if (phase === 0) {
+        	// 音源の初期化とPhase0再生
+        	await AudioEngine.init();
+            AudioEngine.playIntro();
+
             phase = 1;
             instruction.innerText = GAME_CONFIG.text.phase1Instruction;
             triggerFlash(0.3); hitStop = 4;
@@ -385,7 +475,10 @@
                     ctx.beginPath(); ctx.arc(width/2, targetY, ringR, 0, Math.PI*2); ctx.stroke();
                     if (waitTimer > 0) {
                         if (waitTimer === 1) {
-                            phase = 2; timer = 0; limitTimer = GAME_CONFIG.balance.phase2TimeLimit;
+                            phase = 2; timer = 0; 
+							AudioEngine.stop();
+							AudioEngine.startMainLoop();
+							limitTimer = GAME_CONFIG.balance.phase2TimeLimit;
                             instruction.innerText = GAME_CONFIG.text.phase2Instruction;
                             progressContainer.style.opacity = 1; timeDisplay.style.opacity = 1;
                         }
@@ -510,6 +603,7 @@
     }
 
     function showResult() {
+		AudioEngine.stop();
         resultScreen.style.display = 'flex';
         finalScoreDisplay.innerText = Math.floor(totalScore);
         let rankName = GAME_CONFIG.ranks[GAME_CONFIG.ranks.length - 1].name;
