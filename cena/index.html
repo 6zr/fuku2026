@@ -226,10 +226,10 @@
     };
     const GAME_CONFIG = {
         assets: {
-            face: 'https://6zr.github.io/fuku2026/images/face.png',
-            handL: 'https://6zr.github.io/fuku2026/images/hand_l.png',
-            handR: 'https://6zr.github.io/fuku2026/images/hand_r.png',
-            bodyFull: 'https://6zr.github.io/fuku2026/images/mikan.png'
+            face: 'https://6zr.github.io/fuku2026/cena/images/face.png',
+            handRaise: 'https://6zr.github.io/fuku2026/cena/images/hand_raise.png',
+            handShuffle: 'https://6zr.github.io/fuku2026/cena/images/hand_shuffle.png',
+            aa: 'https://6zr.github.io/fuku2026/cena/images/aa.png'
         },
         text: {
             scoreLabel: "RESPECT",
@@ -464,7 +464,7 @@
             case 1:
                 if (phase === 1 && waitTimer === 0) timer += 0.025;
                 drawAsset(assets.face, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3);
-                drawAsset(assets.handL, charX + sX + 60, charY + sY - 60, assetBaseSize * 0.6, assetBaseSize * 0.6, -0.2, 1.1);
+                drawAsset(assets.handRaise, charX + sX + 60, charY + sY - 60, assetBaseSize * 0.6, assetBaseSize * 0.6, -0.2, 1.1);
                 if (phase === 1) {
                     const p = (timer % 1.8) / 1.8;
                     const targetY = height * 0.4;
@@ -496,7 +496,7 @@
                 handX += handSpeed; handSpeed *= 0.82; handX *= 0.8;
                 const alpha = Math.min(1, timer * 2.0);
                 drawAsset(assets.face, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3, 0, 1, alpha);
-                drawAsset(assets.handR, charX + sX + handX, charY + sY - 40, assetBaseSize * 0.7, assetBaseSize * 0.7, handSpeed * 0.02, 1.2, alpha);
+                drawAsset(assets.handShuffle, charX + sX + handX, charY + sY - 40, assetBaseSize * 0.7, assetBaseSize * 0.7, handSpeed * 0.02, 1.2, alpha);
                 if ((timer >= 1.0 || limitTimer <= 0) && !transitionLock) {
                     transitionLock = true; waitTimer = 60;
                     instruction.innerText = GAME_CONFIG.text.phase3Instruction;
@@ -581,7 +581,7 @@
                     ctx.fillText(GAME_CONFIG.text.aaFinish2, width/2, height/2 + 50);
                     ctx.shadowBlur = 0;
                 }
-                drawAsset(assets.bodyFull, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3, charRotation, charScale);
+                drawAsset(assets.aa, charX + sX, charY + sY, assetBaseSize, assetBaseSize * 1.3, charRotation, charScale);
                 break;
         }
 
